@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import curses
+import need
 from subprocess import Popen, PIPE, call
 screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
@@ -18,13 +19,9 @@ while True:
   elif press == ord("g"):
     screen.clear()   #otherwise things get messy
     moment = screen.getstr()
-    ret = moment.split(" ")
-    ret.insert(0,"python")
-    ''' this part is really frustrating.  we should be able to do this with
-        "import printr, prntr.main(*args)"  but fucking getstr() doesn't want
-        to play nice... when it does we won't have messy .pyc shit and
-        spin-up hangtime'''
-
-    ret.insert(1,"ptr.py")  #send G code here
-    ret = call(ret)  #these are all the args in a list
+    #ret = moment.split(" ")
+    #nret = "".join(ret)
+    screen.addstr(moment)
+    #screen.refresh()
+    need.main(moment)
 curses.endwin() #there's no place like home
