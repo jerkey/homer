@@ -3,7 +3,7 @@ import serial
 from time import sleep
 class prntr:
   def __init__(self ):
-    self.com = serial.Serial('/dev/ttyACM0', '230400', timeout = None)
+    self.com = serial.Serial('/dev/ttyACM0', 230400, timeout = 2)
     sleep(2)
   def wrk(self, *cmd):
     self.com.write(cmd)
@@ -12,6 +12,7 @@ class prntr:
 def main(*arg):
   print "I moved the printer, G"+" "+" ".join(arg[1:])
   bot = prntr()
+  sleep(6)
   print bot.test()
 
 
