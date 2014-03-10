@@ -16,6 +16,15 @@ while True:
   elif press == curses.KEY_LEFT:  #this is pretty straightforward
     screen.clear()
     screen.addstr( "left")
+  elif press == curses.KEY_PPAGE:  #this is pretty straightforward
+    screen.clear()
+    screen.addstr( "pgup")
+  elif press == curses.KEY_NPAGE:  #this is pretty straightforward
+    screen.clear()
+    screen.addstr( "pgdn")
+  elif press == curses.KEY_RIGHT:  #this is pretty straightforward
+    screen.clear()
+    screen.addstr( "right")
   elif press == ord("g"):
     screen.clear()   #otherwise things get messy
     moment = screen.getstr()
