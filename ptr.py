@@ -8,7 +8,7 @@ class prntr:
   def wrk(self, *cmd):
     self.com.write(cmd)
   def test(self):
-   self.com.write("M106 S255")
+   self.com.write("M106 S255\n\r")
 def main(*arg):
   print "I moved the printer, G"+" "+" ".join(arg[1:])
   bot = prntr()
