@@ -30,40 +30,40 @@ they still need a scalar variable implementation'''
     screen.clear()
     screen.addstr( "left")
     ptr.xp()  #x axis plus
-    cam_home['x']+=0.1
-    tool_home['x']+=0.1  #this needs to be modular for scalar
+    cam_home['x']+=0.01
+    tool_home['x']+=0.01  #this needs to be modular for scalar
   elif press == curses.KEY_RIGHT: 
     screen.clear()
     screen.addstr( "right")
     ptr.xm()  #x axis minus
-    cam_home['x']-=0.1
-    tool_home['x']-=0.1  #this needs to be modular for scalar
+    cam_home['x']-=0.01
+    tool_home['x']-=0.01  #this needs to be modular for scalar
   elif press == curses.KEY_UP:
     screen.clear()
     screen.addstr( "up")
-    cam_home['y']+=0.1
-    tool_home['y']+=0.1  #this needs to be modular for scalar
+    cam_home['y']+=0.01
+    tool_home['y']+=0.01  #this needs to be modular for scalar
     ptr.yp()
   elif press == curses.KEY_DOWN:  
     screen.clear()
     screen.addstr( "down")
     ptr.ym()
-    cam_home['y']-=0.1
-    tool_home['y']-=0.1  #this needs to be modular for scalar
+    cam_home['y']-=0.01
+    tool_home['y']-=0.01  #this needs to be modular for scalar
 
   elif press == curses.KEY_PPAGE:  
     screen.clear()
     screen.addstr( "pgup")
     ptr.zp()
-    cam_home['z']+=0.1
-    tool_home['z']+=0.1  #this needs to be modular for scalar
+    cam_home['z']+=0.01
+    tool_home['z']+=0.01  #this needs to be modular for scalar
 
   elif press == curses.KEY_NPAGE: 
     screen.clear()
     screen.addstr( "pgdn")
     ptr.zm()
-    cam_home['z']-=0.1
-    tool_home['z']-=0.1  #this needs to be modular for scalar
+    cam_home['z']-=0.01
+    tool_home['z']-=0.01  #this needs to be modular for scalar
 
 
 '''these methods provide telemetry, orientation data for the user'''

@@ -28,32 +28,32 @@ class prntr:
 
   def xp(self):  #eventually this is going to take a scalar type as well for an argument
     self.com.flush()
-    self.com.write("G X 1\r\n")
+    self.com.write("G X 0.01\r\n")
     return self.com.readlines()
 
   def xm(self):  #P for PLUS M for MINUS
     self.com.flush()
-    self.com.write("G X -1\r\n")
+    self.com.write("G X -0.01\r\n")
     return self.com.readlines()
 
   def yp(self):
     self.com.flush()
-    self.com.write("G Y 1\r\n")
+    self.com.write("G Y 0.01\r\n")
     return self.com.readlines()
 
   def ym(self): 
     self.com.flush()
-    self.com.write("G Y -1\r\n")
+    self.com.write("G Y -0.01\r\n")
     return self.com.readlines()
 
   def zp(self):
     self.com.flush()
-    self.com.write("G Y 1\r\n")
+    self.com.write("G Y 0.01\r\n")
     return self.com.readlines()
 
   def zm(self): 
     self.com.flush()
-    self.com.write("G Y -1\r\n")
+    self.com.write("G Y -0.01\r\n")
     return self.com.readlines()
 
 
