@@ -23,37 +23,37 @@ class prntr:
   def fan(self):
    self.com.write("M106 S255\r\n")
   
-''' these methods are for controlling relative movement of the toolhead'''
+""" these methods are for controlling relative movement of the toolhead"""
 
 
-  def xp(self):  #eventually this is going to take a scalar type as well for an argument
+  def xp(self, increment):  #eventually this is going to take a scalar type as well for an argument
     self.com.flush()
-    self.com.write("G X 0.01\r\n")
+    self.com.write("G X {0}\r\n".format(increment))
     return self.com.readlines()
 
-  def xm(self):  #P for PLUS M for MINUS
+  def xm(self, increment):  #P for PLUS M for MINUS
     self.com.flush()
-    self.com.write("G X -0.01\r\n")
+    self.com.write("G X -{0}\r\n".format(increment))
     return self.com.readlines()
 
-  def yp(self):
+  def yp(self, increment):
     self.com.flush()
-    self.com.write("G Y 0.01\r\n")
+    self.com.write("G Y {0}\r\n".format(increment))
     return self.com.readlines()
 
   def ym(self): 
     self.com.flush()
-    self.com.write("G Y -0.01\r\n")
+    self.com.write("G Y -{0}\r\n".format(increment))
     return self.com.readlines()
 
   def zp(self):
     self.com.flush()
-    self.com.write("G Y 0.01\r\n")
+    self.com.write("G Y {0}\r\n".format(increment))
     return self.com.readlines()
 
   def zm(self): 
     self.com.flush()
-    self.com.write("G Y -0.01\r\n")
+    self.com.write("G Y -{0}\r\n".format(increment))
     return self.com.readlines()
 
 
