@@ -87,13 +87,13 @@ they still need a scalar variable implementation"""
     screen.clear()   #otherwise things get messy
     moment = screen.getstr()
     screen.addstr(moment)
-    need.g(moment)
+    ptr.cmnd("G {0}".format(moment))
   
   elif press == ord("m"):
     screen.clear()   #otherwise things get messy
     moment = screen.getstr()
     screen.addstr(moment)
-    need.m(moment)
+    ptr.cmnd("M {0}".format(moment))
 
   elif press == ord("1"):
     increment = 0.01
