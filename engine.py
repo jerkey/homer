@@ -95,5 +95,12 @@ they still need a scalar variable implementation"""
     screen.addstr(moment)
     need.m(moment)
 
+elif press == ord("1"):
+  increment = 0.01
+elif press == ord("2"):
+  increment = 0.1
+elif press == ord("3"):
+  increment = 1.0
+
 
 curses.endwin() #there's no place like home
