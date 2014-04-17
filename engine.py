@@ -7,25 +7,19 @@ cam_home = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 #these two dictionaries will store the arithmetic from each movement
 
 import curses
-import need
+import ptr as p
 from subprocess import Popen, PIPE, call
 screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
 curses.curs_set(0)
 screen.keypad(1)  #nothing works without this
-
 screen.addstr("m g up down left right pgup pgdn increment c t\n")
+ptr=p.prntr()
 while True:
 
-  
+  increment = 0.01 #default increment 
   press = screen.getch()
   if press == ord("q"): break  #quit  ord values are important
-  
-
-""" these methods are for moving the tool head around
-they still need a scalar variable implementation"""
-
-
   elif press == curses.KEY_LEFT:  #this is pretty straightforward
     screen.clear()
     screen.addstr( "left")
@@ -66,7 +60,7 @@ they still need a scalar variable implementation"""
     tool_home['z']-=increment  #this needs to be modular for scalar
 
 
-"""these methods provide telemetry, orientation data for the user"""
+  #these methods provide telemetry, orientation data for the user
 
   elif press == ord("t"):
     #these functions need a vector to track
@@ -81,7 +75,7 @@ they still need a scalar variable implementation"""
     for i in cam_home:
       cam_home[i] = 0  #make this the starting point
   
-"""these methods  allow the user to send raw g code to the printer"""
+  #these methods  allow the user to send raw g code to the printer
 
   elif press == ord("g"):
     screen.clear()   #otherwise things get messy
@@ -100,7 +94,7 @@ they still need a scalar variable implementation"""
   elif press == ord("2"):
     increment = 0.1
   elif press == ord("3"):
-  increment = 1.0
+    increment = 1.0
 
 
 curses.endwin() #there's no place like home
