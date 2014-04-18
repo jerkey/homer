@@ -15,9 +15,9 @@ curses.curs_set(0)
 screen.keypad(1)  #nothing works without this
 screen.addstr("m g up down left right pgup pgdn increment c t\n")
 ptr=p.prntr()
+increment = 1.0
 while True:
 
-  increment = 0.01 #default increment 
   press = screen.getch()
   if press == ord("q"): break  #quit  ord values are important
   elif press == curses.KEY_LEFT:  #this is pretty straightforward

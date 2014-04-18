@@ -16,7 +16,7 @@ class prntr:
     print( self.com.readlines())
 
   def cmnd(self, *cmd):
-    com.flush()
+    self.com.flush()
     self.com.write(cmd)
     return self.com.readlines()
 
@@ -48,12 +48,12 @@ class prntr:
 
   def zp(self, increment):
     self.com.flush()
-    self.com.write("G Y {0}\r\n".format(increment))
+    self.com.write("G Z {0}\r\n".format(increment))
     return self.com.readlines()
 
   def zm(self, increment): 
     self.com.flush()
-    self.com.write("G Y -{0}\r\n".format(increment))
+    self.com.write("G Z -{0}\r\n".format(increment))
     return self.com.readlines()
 
 
