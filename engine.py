@@ -69,6 +69,13 @@ while True:
     screen.addstr("camera home")
     for i in cam_home:
       cam_home[i] = present_position[i]
+  elif press == ord("h"):
+    screen.clear()   
+    screen.addstr("actually home machine XY")
+    ptr.hx()
+    ptr.hy()
+    present_position['x'] = 0
+    present_position['y'] = 0
   
   #these methods  allow the user to send raw g code to the printer
 

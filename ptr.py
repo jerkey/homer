@@ -44,6 +44,15 @@ class prntr:
   def zm(self, increment): 
     self.com.write("G Z -{0}\r\n".format(increment))
 
+  def hx(self):
+    self.com.write("G28 X\r\n")
+
+  def hy(self):
+    self.com.write("G28 Y\r\n")
+
+  def hz(self):
+    self.com.write("G28 Z\r\n")
+
 
 #initialize the routine
 bot = prntr
