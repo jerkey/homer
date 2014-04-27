@@ -17,7 +17,7 @@ class prntr:
 
   def cmnd(self, *cmd):
     self.com.flush()
-    self.com.write(cmd)
+    self.com.write(*cmd[:-1],"\r\n")
     return self.com.readlines()
 
   def fan(self):
