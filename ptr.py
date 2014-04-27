@@ -26,10 +26,10 @@ class prntr:
   #these methods are for controlling relative movement of the toolhead
 
 
-  def xm(self, increment):  #eventually this is going to take a scalar type as well for an argument
+  def xp(self, increment):  #P for PLUS M for MINUS
     self.com.write("G X {0}\r\n".format(increment))
 
-  def xp(self, increment):  #P for PLUS M for MINUS
+  def xm(self, increment):  #P for PLUS M for MINUS
     self.com.write("G X -{0}\r\n".format(increment))
 
   def yp(self, increment):

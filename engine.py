@@ -4,6 +4,7 @@
 #set up globally scoped variables for telemetry 
 tool_home = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 cam_home = {'x': 0.0, 'y': 0.0, 'z': 0.0}
+present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 #these two dictionaries will store the arithmetic from each movement
 
 import curses
@@ -23,41 +24,35 @@ while True:
   elif press == curses.KEY_LEFT:  #this is pretty straightforward
     screen.clear()
     screen.addstr( "left")
-    ptr.xp(increment)  #x axis plus
-    cam_home['x']+=increment
-    tool_home['x']+=increment  #this needs to be modular for scalar
+    ptr.xm(increment)  #x axis minus
+    present_position['x']-=increment  #this needs to be modular for scalar
   elif press == curses.KEY_RIGHT: 
     screen.clear()
     screen.addstr( "right")
-    ptr.xm(increment)  #x axis minus
-    cam_home['x']-=increment
-    tool_home['x']-=increment  #this needs to be modular for scalar
+    ptr.xp(increment)  #x axis plus
+    present_position['x']+=increment  #this needs to be modular for scalar
   elif press == curses.KEY_UP:
     screen.clear()
     screen.addstr( "up")
-    cam_home['y']+=increment
-    tool_home['y']+=increment #this needs to be modular for scalar
+    present_position['y']+=increment #this needs to be modular for scalar
     ptr.yp(increment)
   elif press == curses.KEY_DOWN:  
     screen.clear()
     screen.addstr( "down")
     ptr.ym(increment)
-    cam_home['y']-=increment
-    tool_home['y']-=increment  #this needs to be modular for scalar
+    present_position['y']-=increment  #this needs to be modular for scalar
 
   elif press == curses.KEY_PPAGE:  
     screen.clear()
     screen.addstr( "pgup")
     ptr.zp(increment)
-    cam_home['z']+=increment
-    tool_home['z']+=increment #this needs to be modular for scalar
+    present_position['z']+=increment #this needs to be modular for scalar
 
   elif press == curses.KEY_NPAGE: 
     screen.clear()
     screen.addstr( "pgdn")
     ptr.zm(increment)
-    cam_home['z']-=increment
-    tool_home['z']-=increment  #this needs to be modular for scalar
+    present_position['z']-=increment  #this needs to be modular for scalar
 
 
   #these methods provide telemetry, orientation data for the user
@@ -67,13 +62,13 @@ while True:
     screen.clear()   
     screen.addstr("toolhead home")
     for i in tool_home:
-      tool_home[i] = 0  #make this the starting point
+      tool_home[i] = present_position[i]
   elif press == ord("c"):
     #these functions need a vector to track
     screen.clear()   
     screen.addstr("camera home")
     for i in cam_home:
-      cam_home[i] = 0  #make this the starting point
+      cam_home[i] = present_position[i]
   
   #these methods  allow the user to send raw g code to the printer
 
@@ -95,6 +90,8 @@ while True:
     increment = 0.1
   elif press == ord("3"):
     increment = 1.0
+  elif press == ord("4"):
+    increment = 10.0
 
 
 curses.endwin() #there's no place like home
