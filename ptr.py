@@ -15,9 +15,9 @@ class prntr:
     self.com.write("G 91\r\n")  #everything in this script is for relative motion
     print( self.com.readlines())
 
-  def cmnd(self, *cmd):
+  def cmnd(self, cmd):
     self.com.flush()
-    self.com.write(*cmd[:-1],"\r\n")
+    self.com.write(cmd[:-1],"\r\n")
     return self.com.readlines()
 
   def fan(self):
@@ -26,35 +26,23 @@ class prntr:
   #these methods are for controlling relative movement of the toolhead
 
 
-  def xp(self, increment):  #eventually this is going to take a scalar type as well for an argument
-    self.com.flush()
+  def xm(self, increment):  #eventually this is going to take a scalar type as well for an argument
     self.com.write("G X {0}\r\n".format(increment))
-    return self.com.readlines()
 
-  def xm(self, increment):  #P for PLUS M for MINUS
-    self.com.flush()
+  def xp(self, increment):  #P for PLUS M for MINUS
     self.com.write("G X -{0}\r\n".format(increment))
-    return self.com.readlines()
 
   def yp(self, increment):
-    self.com.flush()
     self.com.write("G Y {0}\r\n".format(increment))
-    return self.com.readlines()
 
   def ym(self, increment): 
-    self.com.flush()
     self.com.write("G Y -{0}\r\n".format(increment))
-    return self.com.readlines()
 
   def zp(self, increment):
-    self.com.flush()
     self.com.write("G Z {0}\r\n".format(increment))
-    return self.com.readlines()
 
   def zm(self, increment): 
-    self.com.flush()
     self.com.write("G Z -{0}\r\n".format(increment))
-    return self.com.readlines()
 
 
 #initialize the routine
