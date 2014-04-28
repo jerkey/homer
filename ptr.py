@@ -8,12 +8,12 @@ class prntr:
   #this is the base class for all printer communication
 
   def __init__(self ): #anything that needs to happen when the device connects
-    self.com = serial.Serial('/dev/ttyACM0', 230400, timeout = 2)
-    sleep(8)  #wait for data
+    self.com = serial.Serial('/dev/ttyACM0', 230400, timeout = 1)
+#    sleep(8)  #wait for data
     self.com.readlines()
     self.com.flush()
     self.com.write("G 91\r\n")  #everything in this script is for relative motion
-    print( self.com.readlines())
+#    print( self.com.readlines())
 
   def cmnd(self, cmd):
     self.com.flush()

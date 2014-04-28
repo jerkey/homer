@@ -17,42 +17,44 @@ screen.keypad(1)  #nothing works without this
 screen.addstr("m g up down left right pgup pgdn increment c t\n")
 ptr=p.prntr()
 increment = 1.0
+
+def printInfo(text):
+    screen.addstr( str(text)+" %.3f, %.3f, %.3f" % (present_position['x'],present_position['y'],present_position['z'])) # left %.3f, %.3f, %.3f
+
 while True:
 
   press = screen.getch()
   if press == ord("q"): break  #quit  ord values are important
   elif press == curses.KEY_LEFT:  #this is pretty straightforward
     screen.clear()
-    screen.addstr( "left")
     ptr.xm(increment)  #x axis minus
     present_position['x']-=increment  #this needs to be modular for scalar
+    printInfo( "left ")
   elif press == curses.KEY_RIGHT: 
     screen.clear()
-    screen.addstr( "right")
     ptr.xp(increment)  #x axis plus
     present_position['x']+=increment  #this needs to be modular for scalar
+    printInfo( "right")
   elif press == curses.KEY_UP:
     screen.clear()
-    screen.addstr( "up")
     present_position['y']+=increment #this needs to be modular for scalar
     ptr.yp(increment)
+    printInfo( "forth")
   elif press == curses.KEY_DOWN:  
     screen.clear()
-    screen.addstr( "down")
     ptr.ym(increment)
     present_position['y']-=increment  #this needs to be modular for scalar
-
-  elif press == curses.KEY_PPAGE:  
+    printInfo( "back ")
+  elif press == curses.KEY_PPAGE:  # pageup
     screen.clear()
-    screen.addstr( "pgup")
     ptr.zp(increment)
     present_position['z']+=increment #this needs to be modular for scalar
-
-  elif press == curses.KEY_NPAGE: 
+    printInfo( "up   ")
+  elif press == curses.KEY_NPAGE:  # pagedown
     screen.clear()
-    screen.addstr( "pgdn")
     ptr.zm(increment)
     present_position['z']-=increment  #this needs to be modular for scalar
+    printInfo( "down ")
 
 
   #these methods provide telemetry, orientation data for the user
@@ -60,13 +62,13 @@ while True:
   elif press == ord("t"):
     #these functions need a vector to track
     screen.clear()   
-    screen.addstr("toolhead home")
+    printInfo( "toolhead home")
     for i in tool_home:
       tool_home[i] = present_position[i]
   elif press == ord("c"):
     #these functions need a vector to track
     screen.clear()   
-    screen.addstr("camera home")
+    printInfo( "camera home")
     for i in cam_home:
       cam_home[i] = present_position[i]
   elif press == ord("h"):
@@ -74,7 +76,7 @@ while True:
     screen.addstr("actually home machine XY")
     ptr.hx()
     ptr.hy()
-    present_position['x'] = 0
+    present_position['x'] = 240
     present_position['y'] = 0
   
   #these methods  allow the user to send raw g code to the printer
