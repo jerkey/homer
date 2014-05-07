@@ -4,7 +4,11 @@
 #set up globally scoped variables for telemetry 
 tool_home = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 cam_home = {'x': 0.0, 'y': 0.0, 'z': 0.0}
+paste_home = {'x': 0.0, 'y': 0.0, 'z': 0.0}
+move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
+position = {'tool' : tool_home, 'cam' : cam_home, 'paste' : paste_home}
+tools = {ord('t') : 'tool', ord('c') : 'cam', ord('p') : 'paste'}
 #these two dictionaries will store the arithmetic from each movement
 
 import curses
@@ -17,6 +21,7 @@ screen.keypad(1)  #nothing works without this
 screen.addstr("m g up down left right pgup pgdn increment c t\n")
 ptr=p.prntr()
 increment = 1.0
+tool_mode = 'tool'
 
 def printInfo(text):
     screen.addstr( str(text)+" %.3f, %.3f, %.3f" % (present_position['x'],present_position['y'],present_position['z'])) # left %.3f, %.3f, %.3f
@@ -56,16 +61,26 @@ while True:
     present_position['z']-=increment  #this needs to be modular for scalar
     printInfo( "down ")
 
+  elif press in tools:  # if any tool is selected
+    screen.clear()
+    printInfo( "mode = toolhead")
+    if tool_mode != 'tool':
+      for i in position['tool']:
+        move_adder[i] = position['tool'][i] - position[tool_mode][i]
+      tool_mode != 'tool'
+      screen.addstr("G1 X{0} Y{1} Z{2}".format(move_adder['x'],move_adder['y'],move_adder['z'])) #ptr.cmnd
 
-  #these methods provide telemetry, orientation data for the user
-
-  elif press == ord("t"):
+  elif press == ord("c"):
+    screen.clear()
+    printInfo( "mode = camera")
+    tool_mode = 'cam'
+  elif press == ord("T"):
     #these functions need a vector to track
     screen.clear()   
     printInfo( "toolhead home")
     for i in tool_home:
       tool_home[i] = present_position[i]
-  elif press == ord("c"):
+  elif press == ord("C"):
     #these functions need a vector to track
     screen.clear()   
     printInfo( "camera home")
@@ -102,5 +117,7 @@ while True:
   elif press == ord("4"):
     increment = 10.0
 
+  if press in tools:
+    screen.addstr("pressed a key in tools") #tools[press])
 
 curses.endwin() #there's no place like home
