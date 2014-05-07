@@ -63,11 +63,11 @@ while True:
 
   elif press in tools:  # if any tool is selected
     screen.clear()
-    printInfo( "mode = toolhead")
-    if tool_mode != 'tool':
-      for i in position['tool']:
-        move_adder[i] = position['tool'][i] - position[tool_mode][i]
-      tool_mode != 'tool'
+    printInfo( "mode = {0}".format(tools[press]))
+    if tool_mode != tools[press]:
+      for i in position[tools[press]]:
+        move_adder[i] = position[tools[press]][i] - position[tool_mode][i]
+      tool_mode = tools[press]
       screen.addstr("G1 X{0} Y{1} Z{2}".format(move_adder['x'],move_adder['y'],move_adder['z'])) #ptr.cmnd
 
   elif press == ord("c"):
