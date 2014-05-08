@@ -9,6 +9,12 @@ for i in tools:
   for g in {'x','y','z'}:
     tools[i][g] = 0.0
 
+seek_positions = { n : {'x': 0.0, 'y': 0.0, 'z': 0.0} for n in range(10)} # create empty array
+
+def printSeeks():
+  for i in range(0, 10):
+    screen.addstr(10+i,0,"seek {0}: X{1} Y{2} Z{3}".format(i,seek_positions[i]['x'],seek_positions[i]['y'],seek_positions[i]['z']))
+
 import curses
 import ptr as p
 from subprocess import Popen, PIPE, call
@@ -25,10 +31,11 @@ increment = 1.0
 tool_mode = ord('c') # you better have a valid tool in here to start with
 
 def printInfo(text):
-    # curpos = curses.getsyx()
-    screen.addstr(4,0,"mode = {0}".format(tools[tool_mode]['name'])+"       ")
-    screen.addstr(5,0,"absolute position: %.3f, %.3f, %.3f                     \n" % (present_position['x'],present_position['y'],present_position['z'])+str(text)+"\n")
+  # curpos = curses.getsyx()
+  screen.addstr(4,0,"mode = {0}".format(tools[tool_mode]['name'])+"       ")
+  screen.addstr(5,0,"absolute position: %.3f, %.3f, %.3f                     \n" % (present_position['x'],present_position['y'],present_position['z'])+str(text)+"\n")
 
+printSeeks()
 while True:
 
   press = screen.getch()
@@ -82,6 +89,30 @@ while True:
     ptr.hx()
     ptr.hy()
   
+  elif press == ord("s"):
+    printInfo("seek to which stored position? 0-9  ")
+    press = screen.getch()
+    if press >= ord('0') and press <= ord('9'):
+      tool_mode = ord('c') # switch to camera tool when seeking
+      for i in {'x','y','z'}:
+        move_adder[i] = seek_positions[press-48][i] - present_position[i]
+      printInfo("seeking to stored position {0}                           ".format(chr(press)))
+      screen.addstr(6,0,"G1 X{0} Y{1} Z{2}".format(move_adder['x'],move_adder['y'],move_adder['z'])) #ptr.cmnd(
+    else:
+      printInfo("not a numeral, seek cancelled.                           ")
+
+  elif press == ord("S"):
+    printInfo("STORE POSITION to which stored position? 0-9  ")
+    press = screen.getch()
+    if press >= ord('0') and press <= ord('9'):
+      for i in {'x','y','z'}:
+        seek_positions[press-48][i] = present_position[i] # store position
+        if tool_mode != ord('c'):
+          seek_positions[press-48][i] += tools[ord('c')][i] - tools[tool_mode][i] #add the offset to camera mode
+    else:
+      screen.addstr(5,0,"not a numeral, store cancelled.                           ")
+    printSeeks() # update display of seek coordinates
+
   #these methods  allow the user to send raw g code to the printer
 
   elif press == ord("g"):
