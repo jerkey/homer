@@ -11,14 +11,14 @@ class prntr:
     self.com = serial.Serial('/dev/ttyACM0', 230400, timeout = 1)
 #    sleep(8)  #wait for data
     self.com.readlines()
-    self.com.flush()
+    self.com.flushInput()
     self.com.write("G 91\r\n")  #everything in this script is for relative motion
 #    print( self.com.readlines())
 
   def cmnd(self, cmd):
-    self.com.flush()
+    self.com.flushInput()
     self.com.write(cmd[:-1]+"\r\n")
-    return self.com.readlines()
+    return #self.com.readlines()
 
   def fan(self):
    self.com.write("M106 S255\r\n")
