@@ -13,6 +13,7 @@ seek_positions = { n : {'x': 0.0, 'y': 0.0, 'z': 0.0} for n in range(10)} # crea
 
 def printSeeks():
   for i in range(0, 10):
+    screen.addstr(9,0,"Positions are based on camera tool selected")
     screen.addstr(10+i,0,"seek {0}: X{1} Y{2} Z{3}".format(i,seek_positions[i]['x'],seek_positions[i]['y'],seek_positions[i]['z']))
 
 import curses
@@ -96,6 +97,8 @@ while True:
       tool_mode = ord('c') # switch to camera tool when seeking
       for i in {'x','y','z'}:
         move_adder[i] = seek_positions[press-48][i] - present_position[i]
+      # now store the new position in 
+      #present_position[i] += move_adder[i]
       printInfo("seeking to stored position {0}                           ".format(chr(press)))
       screen.addstr(6,0,"G1 X{0} Y{1} Z{2}".format(move_adder['x'],move_adder['y'],move_adder['z'])) #ptr.cmnd(
     else:
@@ -107,7 +110,7 @@ while True:
     if press >= ord('0') and press <= ord('9'):
       for i in {'x','y','z'}:
         seek_positions[press-48][i] = present_position[i] # store position
-        if tool_mode != ord('c'):
+        if tool_mode != ord('c'): # if we are not already in camera mode, compensate
           seek_positions[press-48][i] += tools[ord('c')][i] - tools[tool_mode][i] #add the offset to camera mode
     else:
       screen.addstr(5,0,"not a numeral, store cancelled.                           ")
