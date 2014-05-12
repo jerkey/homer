@@ -31,16 +31,50 @@ ptr=p.prntr()
 increment = 1.0
 tool_mode = ord('c') # you better have a valid tool in here to start with
 
+import os,datetime
+def saveData(): # store the tools dictionary to a file, after renaming old one to datetime
+  errText = ""
+  try:
+    os.rename("engine.dat",datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')+".dat")
+  except OSError:
+    errText = "old engine.dat missing. "
+  printInfo(errText+"writing tools to engine.dat")
+  with open("engine.dat",'w') as dataFile:
+    for i in tools:
+      dataFile.write(chr(i))
+      for g in {'name','x','y','z'}:
+        dataFile.write(",{0}".format(tools[i][g]))
+      dataFile.write("\n")
+    dataFile.close()
+
+def readData(): # store the tools dictionary to a file, after renaming old one to datetime
+  try:
+    printInfo("reading tools dictionary from engine.dat")
+    with open("engine.dat",'r') as dataFile:
+      for line in dataFile:
+        datas = line.rstrip().split(',') # parse each line for datas
+        if len(datas) == 5:
+          dindex = 1 # for indexing elements of datas
+          for g in {'name','x','y','z'}:
+            tools[ord(datas[0])][g] = datas[dindex]
+            dindex += 1
+      dataFile.close()
+  except IOError:
+    printInfo("couldn't open engine.dat")
+
 def printInfo(text):
   # curpos = curses.getsyx()
   screen.addstr(4,0,"mode = {0}".format(tools[tool_mode]['name'])+"       ")
   screen.addstr(5,0,"absolute position: %.3f, %.3f, %.3f                     \n" % (present_position['x'],present_position['y'],present_position['z'])+str(text)+"\n")
 
+readData()
 printSeeks()
 while True:
 
   press = screen.getch()
   if press == ord("q"): break  #quit  ord values are important
+  elif press == ord("W"): saveData() # write config data to engine.dat
+  elif press == ord("R"): readData() # read config data from engine.dat
   elif press == curses.KEY_LEFT:  #this is pretty straightforward
     ptr.xm(increment)  #x axis minus
     present_position['x']-=increment  #this needs to be modular for scalar
