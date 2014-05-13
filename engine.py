@@ -9,12 +9,16 @@ for i in tools:
   for g in {'x','y','z'}:
     tools[i][g] = 0.0
 
-seek_positions = { n : {'x': 0.0, 'y': 0.0, 'z': 0.0} for n in range(10)} # create empty array
+seek_positions = { n : {'name': '', 'x': 0.0, 'y': 0.0, 'z': 0.0} for n in range(10)} # create empty array
 
 def printSeeks():
   for i in range(0, 10):
     screen.addstr(9,0,"Positions are based on camera tool selected")
-    screen.addstr(10+i,0,"seek {0}: X{1} Y{2} Z{3}".format(i,seek_positions[i]['x'],seek_positions[i]['y'],seek_positions[i]['z']))
+    screen.addstr(10+i,0,"seek {0}: X{1} Y{2} Z{3}  {4}".format(i,seek_positions[i]['x'],seek_positions[i]['y'],seek_positions[i]['z'],seek_positions[i]['name']))
+  linenum = 20
+  for i in tools:
+    screen.addstr(linenum,0,"tool {0}: {4}:  X{1} Y{2} Z{3}".format(chr(i),tools[i]['x'],tools[i]['y'],tools[i]['z'],tools[i]['name'].ljust(10)))
+    linenum += 1
 
 import curses
 import ptr as p
@@ -43,9 +47,14 @@ def saveData(): # store the tools dictionary to a file, after renaming old one t
   printInfo(errText+"writing tools to "+datafilename)
   with open(datafilename,'w') as dataFile:
     for i in tools:
-      dataFile.write(chr(i))
+      dataFile.write(chr(i)) # write the letter of the tool
       for g in {'name','x','y','z'}:
         dataFile.write(",{0}".format(tools[i][g]))
+      dataFile.write("\n")
+    for i in seek_positions:
+      dataFile.write(chr(i+48)) # write the 0-9 numeral of the seek position
+      for g in {'name','x','y','z'}:
+        dataFile.write(",{0}".format(seek_positions[i][g]))
       dataFile.write("\n")
     dataFile.close()
 
@@ -58,7 +67,12 @@ def readData(): # store the tools dictionary to a file, after renaming old one t
         if len(datas) == 5:
           dindex = 1 # for indexing elements of datas
           for g in {'name','x','y','z'}:
-            tools[ord(datas[0])][g] = datas[dindex]
+            if ord(datas[0]) in tools:
+              if g == 'name': tools[ord(datas[0])][g] = datas[dindex]
+              else: tools[ord(datas[0])][g] = float(datas[dindex])
+            if (ord(datas[0])-48) in seek_positions:
+              if g == 'name': seek_positions[ord(datas[0])-48][g] = datas[dindex]
+              else: seek_positions[ord(datas[0])-48][g] = float(datas[dindex])
             dindex += 1
       dataFile.close()
   except IOError:
