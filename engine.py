@@ -144,8 +144,8 @@ while True:
     if press >= ord('0') and press <= ord('9'):
       for i in {'x','y','z'}:
         seek_positions[press-48][i] = present_position[i] # store position
-        if tool_mode != ord('c'): # if we are not already in camera mode, compensate
-          seek_positions[press-48][i] += tools[ord('c')][i] - tools[tool_mode][i] #add the offset to camera mode
+        # if tool_mode != ord('c'): # if we are not already in camera mode, compensate
+        #   seek_positions[press-48][i] += tools[tool_mode][i] - tools[ord('c')][i] #add the offset to camera mode
     else:
       screen.addstr(5,0,"not a numeral, store cancelled.                           ")
     printSeeks() # update display of seek coordinates
