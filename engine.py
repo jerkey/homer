@@ -31,15 +31,17 @@ ptr=p.prntr()
 increment = 1.0
 tool_mode = ord('c') # you better have a valid tool in here to start with
 
+datafilename = 'data.engine'
+
 import os,datetime
 def saveData(): # store the tools dictionary to a file, after renaming old one to datetime
   errText = ""
   try:
-    os.rename("engine.dat",datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')+".dat")
+    os.rename(datafilename,datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')+".dat")
   except OSError:
-    errText = "old engine.dat missing. "
-  printInfo(errText+"writing tools to engine.dat")
-  with open("engine.dat",'w') as dataFile:
+    errText = "old "+datafilename+" missing. "
+  printInfo(errText+"writing tools to "+datafilename)
+  with open(datafilename,'w') as dataFile:
     for i in tools:
       dataFile.write(chr(i))
       for g in {'name','x','y','z'}:
@@ -49,8 +51,8 @@ def saveData(): # store the tools dictionary to a file, after renaming old one t
 
 def readData(): # store the tools dictionary to a file, after renaming old one to datetime
   try:
-    printInfo("reading tools dictionary from engine.dat")
-    with open("engine.dat",'r') as dataFile:
+    printInfo("reading tools dictionary from "+datafilename)
+    with open(datafilename,'r') as dataFile:
       for line in dataFile:
         datas = line.rstrip().split(',') # parse each line for datas
         if len(datas) == 5:
@@ -60,7 +62,7 @@ def readData(): # store the tools dictionary to a file, after renaming old one t
             dindex += 1
       dataFile.close()
   except IOError:
-    printInfo("couldn't open engine.dat")
+    printInfo("couldn't open "+datafilename)
 
 def printInfo(text):
   # curpos = curses.getsyx()
@@ -73,8 +75,8 @@ while True:
 
   press = screen.getch()
   if press == ord("q"): break  #quit  ord values are important
-  elif press == ord("W"): saveData() # write config data to engine.dat
-  elif press == ord("R"): readData() # read config data from engine.dat
+  elif press == ord("W"): saveData() # write config data to datafilename
+  elif press == ord("R"): readData() # read config data from datafilename
   elif press == curses.KEY_LEFT:  #this is pretty straightforward
     ptr.xm(increment)  #x axis minus
     present_position['x']-=increment  #this needs to be modular for scalar
