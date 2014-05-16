@@ -149,6 +149,9 @@ while True:
     printInfo( "actually home machine XY")
     ptr.hx()
     ptr.hy()
+  elif press == ord("H"):
+    present_position['z'] = 0
+    printInfo( "set Z axis to home at present height")
   
   elif press == ord("s"):
     printInfo("seek to which stored position? 0-9  ")
