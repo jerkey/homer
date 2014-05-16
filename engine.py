@@ -48,14 +48,18 @@ def saveData(): # store the tools dictionary to a file, after renaming old one t
   with open(datafilename,'w') as dataFile:
     for i in tools:
       dataFile.write(chr(i)) # write the letter of the tool
-      for g in {'name','x','y','z'}:
+      for g in ['name','x','y','z']:
         dataFile.write(",{0}".format(tools[i][g]))
       dataFile.write("\n")
     for i in seek_positions:
       dataFile.write(chr(i+48)) # write the 0-9 numeral of the seek position
-      for g in {'name','x','y','z'}:
+      for g in ['name','x','y','z']:
         dataFile.write(",{0}".format(seek_positions[i][g]))
       dataFile.write("\n")
+    dataFile.write("~,") # tilde means present_position, comma so there are five datas
+    for g in ['x','y','z']:
+      dataFile.write(",{0}".format(present_position[g]))
+    dataFile.write("\n")
     dataFile.close()
 
 def readData(): # store the tools dictionary to a file, after renaming old one to datetime
@@ -66,13 +70,15 @@ def readData(): # store the tools dictionary to a file, after renaming old one t
         datas = line.rstrip().split(',') # parse each line for datas
         if len(datas) == 5:
           dindex = 1 # for indexing elements of datas
-          for g in {'name','x','y','z'}:
+          for g in ['name','x','y','z']:
             if ord(datas[0]) in tools:
               if g == 'name': tools[ord(datas[0])][g] = datas[dindex]
               else: tools[ord(datas[0])][g] = float(datas[dindex])
             if (ord(datas[0])-48) in seek_positions:
               if g == 'name': seek_positions[ord(datas[0])-48][g] = datas[dindex]
               else: seek_positions[ord(datas[0])-48][g] = float(datas[dindex])
+            if (datas[0] == '~') and dindex > 1:
+              present_position[g] = float(datas[dindex])
             dindex += 1
       dataFile.close()
   except IOError:
@@ -84,11 +90,15 @@ def printInfo(text):
   screen.addstr(5,0,"absolute position: %.3f, %.3f, %.3f                     \n" % (present_position['x'],present_position['y'],present_position['z'])+str(text)+"\n")
 
 readData()
+printInfo("hello")
 printSeeks()
 while True:
 
   press = screen.getch()
-  if press == ord("q"): break  #quit  ord values are important
+  if press == ord("Q"): break  #quit without saving
+  if press == ord("q"): # save configuration before quitting
+    saveData()
+    break  #quit  ord values are important
   elif press == ord("W"): saveData() # write config data to datafilename
   elif press == ord("R"): readData() # read config data from datafilename
   elif press == curses.KEY_LEFT:  #this is pretty straightforward
