@@ -56,13 +56,14 @@ def saveData(): # store the tools dictionary to a file, after renaming old one t
       for g in ['name','x','y','z']:
         dataFile.write(",{0}".format(seek_positions[i][g]))
       dataFile.write("\n")
-    dataFile.write("~,") # tilde means present_position, comma so there are five datas
+    dataFile.write("~,"+chr(tool_mode)) # tilde means present_position, comma so there are five datas
     for g in ['x','y','z']:
       dataFile.write(",{0}".format(present_position[g]))
     dataFile.write("\n")
     dataFile.close()
 
 def readData(): # store the tools dictionary to a file, after renaming old one to datetime
+  global tool_mode # we are going to modify a global variable that isn't a dictionary
   try:
     printInfo("reading tools dictionary from "+datafilename)
     with open(datafilename,'r') as dataFile:
@@ -77,8 +78,11 @@ def readData(): # store the tools dictionary to a file, after renaming old one t
             if (ord(datas[0])-48) in seek_positions:
               if g == 'name': seek_positions[ord(datas[0])-48][g] = datas[dindex]
               else: seek_positions[ord(datas[0])-48][g] = float(datas[dindex])
-            if (datas[0] == '~') and dindex > 1:
-              present_position[g] = float(datas[dindex])
+            if (datas[0] == '~'):
+              if dindex == 1: # this is where we store tool_mode
+                tool_mode = ord(datas[1])
+              else:
+                present_position[g] = float(datas[dindex])
             dindex += 1
       dataFile.close()
   except IOError:
