@@ -104,7 +104,9 @@ while True:
     saveData()
     break  #quit  ord values are important
   elif press == ord("W"): saveData() # write config data to datafilename
-  elif press == ord("R"): readData() # read config data from datafilename
+  elif press == ord("R"):
+    readData() # read config data from datafilename
+    printSeeks() # update display of tool coordinates
   elif press == curses.KEY_LEFT:  #this is pretty straightforward
     ptr.xm(increment)  #x axis minus
     present_position['x']-=increment  #this needs to be modular for scalar
@@ -146,6 +148,7 @@ while True:
     printInfo( "{0} home".format(tools[press]['name']))
     for i in {'x','y','z'}:
       tools[press][i] = present_position[i]
+    printSeeks() # update display of tool coordinates
 
   elif press == ord("h"):
     present_position['x'] = 240
