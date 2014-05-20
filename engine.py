@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import curses
+import ptr as p
+import os,datetime
+from subprocess import Popen, PIPE, call
+
 #set up globally scoped variables for telemetry
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
@@ -8,36 +13,10 @@ tools = {ord('e') : {'name':'extruder'}, ord('c') : {'name':'cam'}, ord('p') : {
 for i in tools:
   for g in {'x','y','z'}:
     tools[i][g] = 0.0
-
 seek_positions = { n : {'name': '', 'x': 0.0, 'y': 0.0, 'z': 0.0} for n in range(10)} # create empty array
-
-def printSeeks():
-  for i in range(0, 10):
-    screen.addstr(9,0,"Positions are based on camera tool selected")
-    screen.addstr(10+i,0,"seek {0}: X{1} Y{2} Z{3}  {4}".format(i,seek_positions[i]['x'],seek_positions[i]['y'],seek_positions[i]['z'],seek_positions[i]['name']))
-  linenum = 20
-  for i in tools:
-    screen.addstr(linenum,0,"tool {0}: {4}:  X{1} Y{2} Z{3}".format(chr(i),tools[i]['x'],tools[i]['y'],tools[i]['z'],tools[i]['name'].ljust(10)))
-    linenum += 1
-
-import curses
-import ptr as p
-from subprocess import Popen, PIPE, call
-screen = curses.initscr()  #we're not in kansas anymore
-curses.noecho()    #could be .echo() if you want to see what you type
-curses.curs_set(0)
-screen.keypad(1)  #nothing works without this
-screen.addstr("m g forward backward left right pgup pgdn 0=0.025mm 1=0.1mm 2=1mm 3=10mm\ntools: ")
-for i in tools:
-  screen.addstr("{0}={1}  ".format(chr(i),tools[i]['name']))
-screen.addstr(" (capital to home tool)\nPress s# to seek to a position, capital S# to store in #0-9\n")
-ptr=p.prntr()
-increment = 1.0
-tool_mode = ord('c') # you better have a valid tool in here to start with
 
 datafilename = 'data.engine'
 
-import os,datetime
 def saveData(): # store the tools dictionary to a file, after renaming old one to datetime
   errText = ""
   try:
@@ -88,10 +67,31 @@ def readData(): # store the tools dictionary to a file, after renaming old one t
   except IOError:
     printInfo("couldn't open "+datafilename)
 
+def printSeeks():
+  for i in range(0, 10):
+    screen.addstr(9,0,"Positions are based on camera tool selected")
+    screen.addstr(10+i,0,"seek {0}: X{1} Y{2} Z{3}  {4}".format(i,seek_positions[i]['x'],seek_positions[i]['y'],seek_positions[i]['z'],seek_positions[i]['name']))
+  linenum = 20
+  for i in tools:
+    screen.addstr(linenum,0,"tool {0}: {4}:  X{1} Y{2} Z{3}".format(chr(i),tools[i]['x'],tools[i]['y'],tools[i]['z'],tools[i]['name'].ljust(10)))
+    linenum += 1
+
 def printInfo(text):
   # curpos = curses.getsyx()
   screen.addstr(4,0,"mode = {0}".format(tools[tool_mode]['name'])+"       ")
   screen.addstr(5,0,"absolute position: %.3f, %.3f, %.3f                     \n" % (present_position['x'],present_position['y'],present_position['z'])+str(text)+"\n")
+
+screen = curses.initscr()  #we're not in kansas anymore
+curses.noecho()    #could be .echo() if you want to see what you type
+curses.curs_set(0)
+screen.keypad(1)  #nothing works without this
+screen.addstr("m g forward backward left right pgup pgdn 0=0.025mm 1=0.1mm 2=1mm 3=10mm\ntools: ")
+for i in tools:
+  screen.addstr("{0}={1}  ".format(chr(i),tools[i]['name']))
+screen.addstr(" (capital to home tool)\nPress s# to seek to a position, capital S# to store in #0-9\n")
+ptr=p.prntr()
+increment = 1.0
+tool_mode = ord('c') # you better have a valid tool in here to start with
 
 readData()
 printInfo("hello")
