@@ -1,6 +1,6 @@
 import sys
 import serial
-from time import sleep
+import time
 
 
 
@@ -8,11 +8,23 @@ class prntr:
   #this is the base class for all printer communication
 
   def __init__(self ): #anything that needs to happen when the device connects
-    self.com = serial.Serial('/dev/ttyACM0', 230400, timeout = 1)
-#    sleep(8)  #wait for data
-    self.com.readlines()
-    self.com.flushInput()
+    self.com = serial.Serial('/dev/ttyACM0', 230400, timeout = 0.9)
+    now = time.time()
+    ok = self.com.readline()
+    while not 'ok' in ok:
+      if time.time() - now > 8.0: # seconds to timeout
+        print("no OK from printer")
+        break
+      ok = self.com.readline()
     self.com.write("G 91\r\n")  #everything in this script is for relative motion
+    now = time.time()
+    ok = self.com.readline()
+    while not 'ok' in ok:
+      if time.time() - now > 8.0: # seconds to timeout
+        print("no OK from printer")
+        break
+      ok = self.com.readline()
+    self.com.flushInput()
 #    print( self.com.readlines())
 
   def cmnd(self, cmd):
