@@ -8,30 +8,28 @@ class prntr:
   #this is the base class for all printer communication
 
   def init(self ): #anything that needs to happen when the device connects
-    self.com = serial.Serial('/dev/ttyACM0', 230400, timeout = 0.9)
+    self.com = serial.Serial('/dev/ttyACM0', 230400, timeout = 1)
     self.com.readlines()
-    self.com.write("G 91\r\n")  #everything in this script is for relative motion
-    now = time.time()
     returnMsg = ""
-    ok = self.com.readline()
-    while not 'ok' in ok:
-      if time.time() - now > 5.0: # seconds to timeout
-        returnMsg = returnMsg + "no OK from printer after G 91"
-        time.sleep(5)
-        break
-      ok = self.com.readline()
-    self.com.flushInput()
+    self.com.write("G 91\r\n")  #everything in this script is for relative motion
+    if self.waitOk() != "":
+      returnMsg = returnMsg + "no 'ok' from printer after G 91"
     self.com.write("M201 Z50\r\n")  #change the Z acceleration to prevent upward stripping
+    if self.waitOk() != "":
+      returnMsg = returnMsg + "no 'ok' from printer after M201 Z50"
+    if returnMsg == "": returnMsg = "ptr.init OK"
+    return returnMsg
+
+  def waitOk(self):
     now = time.time()
     ok = self.com.readline()
+    returnMsg = ""
     while not 'ok' in ok:
       if time.time() - now > 5.0: # seconds to timeout
-        returnMsg = returnMsg + "no OK from printer after M201 Z50"
-        time.sleep(5)
+        returnMsg = returnMsg + "no 'ok' from printer"
         break
       ok = self.com.readline()
     self.com.flushInput()
-    if returnMsg == "": returnMsg = "ptr.init OK"
     return returnMsg
 
   def cmnd(self, cmd):
