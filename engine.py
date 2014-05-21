@@ -94,7 +94,7 @@ increment = 1.0
 tool_mode = ord('c') # you better have a valid tool in here to start with
 
 readData()
-printInfo("hello")
+printInfo(ptr.init())
 printSeeks()
 while True:
 
