@@ -3,7 +3,7 @@
 
 import curses
 import ptr as p
-import os,datetime
+import os,datetime,time
 from subprocess import Popen, PIPE, call
 
 #set up globally scoped variables for telemetry
@@ -66,6 +66,33 @@ def readData(): # store the tools dictionary to a file, after renaming old one t
       dataFile.close()
   except IOError:
     printInfo("couldn't open "+datafilename)
+
+def printFile(filename, ptr):
+  try:
+    fd = open(filename,'r')
+  except OSError:
+    printInfo("error: could not open "+filename)
+    return
+  line = fd.readline()
+  for line in fd:
+    line = line.rstrip().split(';')[0]
+    if len(line) > 1:
+      ptr.cmnd(line)
+      screen.addstr(line+"\n")
+      now = time.time()
+      ok = ptr.read1line()
+      while not 'ok' in ok:
+        if time.time() - now > 2.0: # seconds to timeout
+          screen.addstr("no OK from printer")
+          break
+        ok = ptr.read1line()
+  fd.close()
+  ptr.cmnd("G1 F2000")
+  ok = ptr.waitOk()
+  ptr.cmnd("G 91")
+  ok = ok + ptr.waitOk()
+  if ok != "": printInfo(ok)
+  time.sleep(5)
 
 def printSeeks():
   for i in range(0, 10):
@@ -208,5 +235,11 @@ while True:
     increment = 1.0
   elif press == ord("4"):
     increment = 10.0
+
+  elif press == ord("f"):
+    filename = "sline.g"
+    printInfo("Printing G-code file "+filename)
+    printFile(filename,ptr)
+    printInfo("Finished printing G-code file "+filename)
 
 curses.endwin() #there's no place like home
