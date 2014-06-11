@@ -126,6 +126,13 @@ printSeeks()
 while True:
 
   press = screen.getch()
+  if press == ord("V"):
+    ptr.cmnd("M107     ")
+    printInfo("M107     ")
+    printInfo("updn")
+  if press == ord("v"):
+    ptr.cmnd("M106     ")
+    printInfo("M106     ")
   if press == ord("Q"): break  #quit without saving
   if press == ord("q"): # save configuration before quitting
     saveData()
