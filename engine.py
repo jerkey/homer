@@ -112,7 +112,7 @@ screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
 curses.curs_set(0)
 screen.keypad(1)  #nothing works without this
-screen.addstr("m g forward backward left right pgup pgdn 0=0.025mm 1=0.1mm 2=1mm 3=10mm\ntools: ")
+screen.addstr("m g forward backward left right pgup pgdn 1=0.025mm 2=0.1mm 3=1mm 4=10mm\ntools: ")
 for i in tools:
   screen.addstr("{0}={1}  ".format(chr(i),tools[i]['name']))
 screen.addstr(" (capital to home tool)\nPress s# to seek to a position, capital S# to store in #0-9\n")
