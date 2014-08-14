@@ -9,6 +9,22 @@ from subprocess import Popen, PIPE, call
 #set up globally scoped variables for telemetry
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
+commands = { 0 : {'key':'v','descr':'M106 turn fan on'},
+             1 : {'key':'V','descr':'M107 turn fan off'},
+             2 : {'key':'Q','descr':'Quit without saving'},
+             3 : {'key':'q','descr':'quit (and save)'},
+             4 : {'key':'h','descr':'home X and Y axes'},
+             5 : {'key':'H','descr':'set present Z height to zero'},
+             6 : {'key':'s','descr':'seek to # position'},
+             7 : {'key':'S','descr':'Store present position to seek #'},
+             8 : {'key':'g','descr':'send G-code to machine'},
+             9 : {'key':'m','descr':'send M-code to machine'},
+            10 : {'key':'1','descr':'set movement increment to 0.25'},
+            11 : {'key':'2','descr':'set movement increment to 0.1'},
+            12 : {'key':'3','descr':'set movement increment to 1.0'},
+            13 : {'key':'4','descr':'set movement increment to 10.0'},
+            14 : {'key':'W','descr':'Write save file'},
+            15 : {'key':'R','descr':'Read save file'}}
 tools = {ord('e') : {'name':'extruder'}, ord('c') : {'name':'cam'}, ord('p') : {'name':'paste'}}
 for i in tools:
   for g in {'x','y','z'}:
@@ -96,11 +112,19 @@ def printFile(filename, ptr):
 
 def printSeeks():
   for i in range(0, 10):
-    screen.addstr(9,0,"Positions are based on camera tool selected")
-    screen.addstr(10+i,0,"seek {0}: X{1} Y{2} Z{3}  {4}".format(i,seek_positions[i]['x'],seek_positions[i]['y'],seek_positions[i]['z'],seek_positions[i]['name']))
+    screen.addstr(9,0,"press s# to seek to a position, capital S# to store current position")
+    screen.addstr(10+i,0," seek {0}: X{1} Y{2} Z{3}  {4}".format(i,seek_positions[i]['x'],seek_positions[i]['y'],seek_positions[i]['z'],seek_positions[i]['name']))
   linenum = 20
+  screen.addstr(linenum,0,"press tool letter to switch to that tool, Shift-letter to home that tool")
+  linenum += 1
   for i in tools:
-    screen.addstr(linenum,0,"tool {0}: {4}:  X{1} Y{2} Z{3}".format(chr(i),tools[i]['x'],tools[i]['y'],tools[i]['z'],tools[i]['name'].ljust(10)))
+    screen.addstr(linenum,0," tool {0}: {4}:  X{1} Y{2} Z{3}".format(chr(i),tools[i]['x'],tools[i]['y'],tools[i]['z'],tools[i]['name'].ljust(10)))
+    linenum += 1
+  linenum = 9
+  screen.addstr(linenum,midX,"press letter of a command (arrow keys and pgup/pgdn to move machine)")
+  linenum += 1
+  for i in commands:
+    screen.addstr(linenum,midX," {0}: {1}".format(commands[i]['key'],commands[i]['descr']))
     linenum += 1
 
 def printInfo(text):
@@ -111,11 +135,9 @@ def printInfo(text):
 screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
 curses.curs_set(0)
+screenSize = screen.getmaxyx()
+midX = int(screenSize[1]/2) # store the midpoint of the width of the screen
 screen.keypad(1)  #nothing works without this
-screen.addstr("m g forward backward left right pgup pgdn 1=0.025mm 2=0.1mm 3=1mm 4=10mm\ntools: ")
-for i in tools:
-  screen.addstr("{0}={1}  ".format(chr(i),tools[i]['name']))
-screen.addstr(" (capital to home tool)\nPress s# to seek to a position, capital S# to store in #0-9\n")
 ptr=p.prntr()
 increment = 1.0
 tool_mode = ord('c') # you better have a valid tool in here to start with
@@ -226,13 +248,13 @@ while True:
 
   elif press == ord("g"):
     moment = screen.getstr()
-    screen.addstr(moment)
-    ptr.cmnd("G {0}".format(moment))
+    printInfo("G"+moment)
+    ptr.cmnd("G{0}".format(moment))
   
   elif press == ord("m"):
     moment = screen.getstr()
-    screen.addstr(moment)
-    ptr.cmnd("M {0}".format(moment))
+    printInfo("M"+moment)
+    ptr.cmnd("M{0}".format(moment))
 
   elif press == ord("1"):
     increment = 0.025
