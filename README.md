@@ -1,16 +1,11 @@
-pure sorcery
-------------
+homer stands for Human Operated Machine Environment Runtime
 
-this rev is a skeleton set of basic functions and a control interface 
+it is also an homage to Homer Simpson who sits at a giant control panel, pushing buttons to make things happen.
 
-they will need extensive revisions and expansions
+this program allows you to steer a CNC machine around, switch between toolheads (including a camera), and execute g-code files.
 
-dear forker,
+the program tracks the coordinates of the machine, including relative positioning of different toolheads, so that for example the camera can be used to visually home the other tools before use.
 
-this source is designed to work as a set of totally modular functions.  for testing, and maybe for sanity the curses-driven engine will be monolithic in its access to all relevant functions, but the subprocess functions should follow the example set by the `ptr.py` or `need.py` examples all methods related to a certain serial device should find themselves in a class object of that device's subprocess.  we can ignore want.c, but it still might come in useful for future versions.  no time now, i'll explain later.
+macros (hotkeys mapped to sequences of hotkeys) are also available.
 
-
-good luck!
-
-P.S.
-curses is a fucking nightmare.
+the program is written in python to encourage modifications during use, for maximum versatility.
