@@ -9,22 +9,6 @@ from subprocess import Popen, PIPE, call
 #set up globally scoped variables for telemetry
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
-commands = { 0 : {'key':'v','descr':'M106 turn fan on'},
-             1 : {'key':'V','descr':'M107 turn fan off'},
-             2 : {'key':'Q','descr':'Quit without saving'},
-             3 : {'key':'q','descr':'quit (and save)'},
-             4 : {'key':'h','descr':'home X and Y axes'},
-             5 : {'key':'H','descr':'set present Z height to zero'},
-             6 : {'key':'s','descr':'seek to # position'},
-             7 : {'key':'S','descr':'Store present position to seek #'},
-             8 : {'key':'g','descr':'send G-code to machine'},
-             9 : {'key':'m','descr':'send M-code to machine'},
-            10 : {'key':'1','descr':'set movement increment to 0.25'},
-            11 : {'key':'2','descr':'set movement increment to 0.1'},
-            12 : {'key':'3','descr':'set movement increment to 1.0'},
-            13 : {'key':'4','descr':'set movement increment to 10.0'},
-            14 : {'key':'W','descr':'Write save file'},
-            15 : {'key':'R','descr':'Read save file'}}
 tools = {ord('e') : {'name':'extruder'}, ord('c') : {'name':'cam'}, ord('p') : {'name':'paste'}}
 for i in tools:
   for g in {'x','y','z'}:
@@ -124,13 +108,114 @@ def printSeeks():
   screen.addstr(linenum,midX,"press letter of a command (arrow keys and pgup/pgdn to move machine)")
   linenum += 1
   for i in commands:
-    screen.addstr(linenum,midX," {0}: {1}".format(commands[i]['key'],commands[i]['descr']))
+    screen.addstr(linenum,midX," {0}: {1}".format(i,commands[i]['descr']))
     linenum += 1
 
 def printInfo(text):
   # curpos = curses.getsyx()
   screen.addstr(4,0,"mode = {0}".format(tools[tool_mode]['name'])+"       ")
   screen.addstr(5,0,"absolute position: %.3f, %.3f, %.3f                     \n" % (present_position['x'],present_position['y'],present_position['z'])+str(text)+"\n")
+
+def fanOn():
+  #ptr.cmnd("M106     ")
+  printInfo("M106     ")
+
+def fanOff():
+  #ptr.cmnd("M107     ")
+  printInfo("M107     ")
+
+def saveQuit(): # save configuration before quitting
+  saveData()
+  quit() #quit  ord values are important
+
+def Write():
+  saveData() # write config data to datafilename
+
+def Read():
+  readData() # read config data from datafilename
+  printSeeks() # update display of tool coordinates
+
+def homeXY():
+  present_position['x'] = 240
+  present_position['y'] = 0
+  printInfo( "actually home machine XY")
+  ptr.hx()
+  ptr.hy()
+
+def homeZ():
+  present_position['z'] = 0
+  printInfo( "set Z axis to home at present height")
+
+def seek():
+  printInfo("seek to which stored position? 0-9  ")
+  press = screen.getch()
+  if press >= ord('0') and press <= ord('9'):
+    if tool_mode != ord('c'):
+      ptr.cmnd("G1 Z5 F4000"); # move up 5 before traversing, if not on camera
+    for i in {'x','y','z'}:
+      move_adder[i] = seek_positions[press-48][i] - present_position[i]
+      present_position[i] += move_adder[i]
+    printInfo("seeking to stored position {0}                           ".format(chr(press)))
+    ptr.cmnd("G1 X{0} Y{1} Z{2} F8000".format(move_adder['x'],move_adder['y'],move_adder['z'])) #ptr.cmnd(
+    if tool_mode != ord('c'):
+      ptr.cmnd("G1 Z-5 F10000"); # move down 5 after traversing, if not on camera
+  else:
+    printInfo("not a numeral, seek cancelled.                           ")
+
+def seekStore():
+  printInfo("STORE POSITION to which stored position? 0-9  ")
+  press = screen.getch()
+  if press >= ord('0') and press <= ord('9'):
+    for i in {'x','y','z'}:
+      seek_positions[press-48][i] = present_position[i] # store position
+      # if tool_mode != ord('c'): # if we are not already in camera mode, compensate
+      #   seek_positions[press-48][i] += tools[tool_mode][i] - tools[ord('c')][i] #add the offset to camera mode
+  else:
+    screen.addstr(5,0,"not a numeral, store cancelled.                           ")
+  printSeeks() # update display of seek coordinates
+
+def gCode():
+  moment = screen.getstr()
+  printInfo("G"+moment)
+  ptr.cmnd("G{0}".format(moment))
+
+def mCode():
+  moment = screen.getstr()
+  printInfo("M"+moment)
+  ptr.cmnd("M{0}".format(moment))
+
+def speed1():
+  increment = 0.025
+def speed2():
+  increment = 0.1
+def speed3():
+  increment = 1.0
+def speed4():
+  increment = 10.0
+
+def filePicker():
+  filename = "sline.g"
+  printInfo("Printing G-code file "+filename)
+  printFile(filename,ptr)
+  printInfo("Finished printing G-code file "+filename)
+
+commands = { 'v': {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
+             'V': {'seq': 1,'descr':'M107 turn fan off','func':fanOff},
+             'Q': {'seq': 2,'descr':'Quit without saving','func':quit},
+             'q': {'seq': 3,'descr':'quit (and save)','func':saveQuit},
+             'h': {'seq': 4,'descr':'home X and Y axes','func':homeXY},
+             'H': {'seq': 5,'descr':'set present Z height to zero','func':homeZ},
+             's': {'seq': 6,'descr':'seek to # position','func':seek},
+             'S': {'seq': 7,'descr':'Store present position to seek #','func':seekStore},
+             'g': {'seq': 8,'descr':'send G-code to machine','func':gCode},
+             'm': {'seq': 9,'descr':'send M-code to machine','func':mCode},
+             'f': {'seq':10,'descr':'print a g-code file to machine','func':filePicker},
+             '1': {'seq':11,'descr':'set movement increment to 0.25','func':speed1},
+             '2': {'seq':12,'descr':'set movement increment to 0.1','func':speed2},
+             '3': {'seq':13,'descr':'set movement increment to 1.0','func':speed3},
+             '4': {'seq':14,'descr':'set movement increment to 10.0','func':speed4},
+             'W': {'seq':15,'descr':'Write save file','func':Write},
+             'R': {'seq':16,'descr':'Read save file','func':Read}}
 
 screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
@@ -145,24 +230,11 @@ tool_mode = ord('c') # you better have a valid tool in here to start with
 readData()
 printInfo(ptr.init())
 printSeeks()
-while True:
-
-  press = screen.getch()
-  if press == ord("V"):
-    ptr.cmnd("M107     ")
-    printInfo("M107     ")
-    printInfo("updn")
-  if press == ord("v"):
-    ptr.cmnd("M106     ")
-    printInfo("M106     ")
-  if press == ord("Q"): break  #quit without saving
-  if press == ord("q"): # save configuration before quitting
-    saveData()
-    break  #quit  ord values are important
-  elif press == ord("W"): saveData() # write config data to datafilename
-  elif press == ord("R"):
-    readData() # read config data from datafilename
-    printSeeks() # update display of tool coordinates
+while True: # main loop
+  press = screen.getch() # get the character pressed by the user
+  if commands.has_key(chr(press)): # if keystore is a known command in array
+    printInfo(commands[chr(press)]['descr']) # print the command description
+    commands[chr(press)]['func']() # run the appropriate subroutine
   elif press == curses.KEY_LEFT:  #this is pretty straightforward
     ptr.xm(increment)  #x axis minus
     present_position['x']-=increment  #this needs to be modular for scalar
@@ -205,70 +277,5 @@ while True:
     for i in {'x','y','z'}:
       tools[press][i] = present_position[i]
     printSeeks() # update display of tool coordinates
-
-  elif press == ord("h"):
-    present_position['x'] = 240
-    present_position['y'] = 0
-    printInfo( "actually home machine XY")
-    ptr.hx()
-    ptr.hy()
-  elif press == ord("H"):
-    present_position['z'] = 0
-    printInfo( "set Z axis to home at present height")
-  
-  elif press == ord("s"):
-    printInfo("seek to which stored position? 0-9  ")
-    press = screen.getch()
-    if press >= ord('0') and press <= ord('9'):
-      if tool_mode != ord('c'):
-        ptr.cmnd("G1 Z5 F4000"); # move up 5 before traversing, if not on camera
-      for i in {'x','y','z'}:
-        move_adder[i] = seek_positions[press-48][i] - present_position[i]
-        present_position[i] += move_adder[i]
-      printInfo("seeking to stored position {0}                           ".format(chr(press)))
-      ptr.cmnd("G1 X{0} Y{1} Z{2} F8000".format(move_adder['x'],move_adder['y'],move_adder['z'])) #ptr.cmnd(
-      if tool_mode != ord('c'):
-        ptr.cmnd("G1 Z-5 F10000"); # move down 5 after traversing, if not on camera
-    else:
-      printInfo("not a numeral, seek cancelled.                           ")
-
-  elif press == ord("S"):
-    printInfo("STORE POSITION to which stored position? 0-9  ")
-    press = screen.getch()
-    if press >= ord('0') and press <= ord('9'):
-      for i in {'x','y','z'}:
-        seek_positions[press-48][i] = present_position[i] # store position
-        # if tool_mode != ord('c'): # if we are not already in camera mode, compensate
-        #   seek_positions[press-48][i] += tools[tool_mode][i] - tools[ord('c')][i] #add the offset to camera mode
-    else:
-      screen.addstr(5,0,"not a numeral, store cancelled.                           ")
-    printSeeks() # update display of seek coordinates
-
-  #these methods  allow the user to send raw g code to the printer
-
-  elif press == ord("g"):
-    moment = screen.getstr()
-    printInfo("G"+moment)
-    ptr.cmnd("G{0}".format(moment))
-  
-  elif press == ord("m"):
-    moment = screen.getstr()
-    printInfo("M"+moment)
-    ptr.cmnd("M{0}".format(moment))
-
-  elif press == ord("1"):
-    increment = 0.025
-  elif press == ord("2"):
-    increment = 0.1
-  elif press == ord("3"):
-    increment = 1.0
-  elif press == ord("4"):
-    increment = 10.0
-
-  elif press == ord("f"):
-    filename = "sline.g"
-    printInfo("Printing G-code file "+filename)
-    printFile(filename,ptr)
-    printInfo("Finished printing G-code file "+filename)
 
 curses.endwin() #there's no place like home
