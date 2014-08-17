@@ -238,7 +238,7 @@ while True: # main loop
     ptr.xm(increment)  #x axis minus
     present_position['x']-=increment  #this needs to be modular for scalar
     printInfo( "left ")
-  elif press == curses.KEY_RIGHT: 
+  elif press == curses.KEY_RIGHT:
     ptr.xp(increment)  #x axis plus
     present_position['x']+=increment  #this needs to be modular for scalar
     printInfo( "right")
@@ -246,7 +246,7 @@ while True: # main loop
     present_position['y']+=increment #this needs to be modular for scalar
     ptr.yp(increment)
     printInfo( "forth")
-  elif press == curses.KEY_DOWN:  
+  elif press == curses.KEY_DOWN:
     ptr.ym(increment)
     present_position['y']-=increment  #this needs to be modular for scalar
     printInfo( "back ")
