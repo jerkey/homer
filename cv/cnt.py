@@ -22,10 +22,8 @@ while rval:
   ret,thresh = cv2.threshold(grey,127,255,0)
   contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
   dest = np.zeros(thresh.shape, np.uint8)
-  print chr(27) + "[2J"
-  print contours[0]
+  print contours
   print len(contours[0])
-  print "hierarchy:"
   print hierarchy
   for cnt in contours[::1]:
     rect  = cv2.minAreaRect(cnt)
