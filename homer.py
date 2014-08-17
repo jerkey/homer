@@ -94,7 +94,7 @@ def printFile(filename, ptr):
   if ok != "": printInfo(ok)
   time.sleep(5)
 
-def printSeeks():
+def printCommands():
   for i in range(0, 10):
     screen.addstr(9,0,"press s# to seek to a position, capital S# to store current position")
     screen.addstr(10+i,0," seek {0}: X{1} Y{2} Z{3}  {4}".format(i,seek_positions[i]['x'],seek_positions[i]['y'],seek_positions[i]['z'],seek_positions[i]['name']))
@@ -108,8 +108,7 @@ def printSeeks():
   screen.addstr(linenum,midX,"press letter of a command (arrow keys and pgup/pgdn to move machine)")
   linenum += 1
   for i in commands:
-    screen.addstr(linenum,midX," {0}: {1}".format(i,commands[i]['descr']))
-    linenum += 1
+    screen.addstr(linenum+commands[i]['seq'],midX," {0}: {1}".format(i,commands[i]['descr']))
 
 def printInfo(text):
   # curpos = curses.getsyx()
@@ -133,7 +132,7 @@ def Write():
 
 def Read():
   readData() # read config data from datafilename
-  printSeeks() # update display of tool coordinates
+  printCommands() # update display of tool coordinates
 
 def homeXY():
   present_position['x'] = 240
@@ -172,7 +171,7 @@ def seekStore():
       #   seek_positions[press-48][i] += tools[tool_mode][i] - tools[ord('c')][i] #add the offset to camera mode
   else:
     screen.addstr(5,0,"not a numeral, store cancelled.                           ")
-  printSeeks() # update display of seek coordinates
+  printCommands() # update display of seek coordinates
 
 def gCode():
   moment = screen.getstr()
@@ -229,7 +228,7 @@ tool_mode = ord('c') # you better have a valid tool in here to start with
 
 readData()
 printInfo(ptr.init())
-printSeeks()
+printCommands()
 while True: # main loop
   press = screen.getch() # get the character pressed by the user
   if commands.has_key(chr(press)): # if keystore is a known command in array
@@ -276,6 +275,6 @@ while True: # main loop
     printInfo( "{0} home".format(tools[press]['name']))
     for i in {'x','y','z'}:
       tools[press][i] = present_position[i]
-    printSeeks() # update display of tool coordinates
+    printCommands() # update display of tool coordinates
 
 curses.endwin() #there's no place like home
