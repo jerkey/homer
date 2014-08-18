@@ -1,5 +1,5 @@
 #homer
-##stands for Human Operated Machine Environment Runtime
+##Human Operated Machine Environment Runtime
 
 it is also an *homage* to Homer Simpson who sits at a giant control panel, pushing buttons to make things happen.
 

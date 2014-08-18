@@ -135,15 +135,26 @@ def Read():
   printCommands() # update display of tool coordinates
 
 def homeXY():
-  present_position['x'] = 240
+  present_position['x'] = 240 # where are your limit switches?
   present_position['y'] = 0
   printInfo( "actually home machine XY")
   ptr.hx()
   ptr.hy()
 
-def homeZ():
+def homeAll():
+  present_position['x'] = 240 # where are your limit switches?
+  present_position['y'] = 0
   present_position['z'] = 0
-  printInfo( "set Z axis to home at present height")
+  printInfo( "home machine XYZ")
+  ptr.hx()
+  ptr.hy()
+  ptr.hz()
+
+def zeroAll():
+  present_position['x'] = 0
+  present_position['y'] = 0
+  present_position['z'] = 0
+  printInfo( "zero all axes in software only")
 
 def seek():
   printInfo("seek to which stored position? 0-9  ")
@@ -203,18 +214,20 @@ commands = { 'v': {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
              'Q': {'seq': 2,'descr':'Quit without saving','func':quit},
              'q': {'seq': 3,'descr':'quit (and save)','func':saveQuit},
              'h': {'seq': 4,'descr':'home X and Y axes','func':homeXY},
-             'H': {'seq': 5,'descr':'set present Z height to zero','func':homeZ},
-             's': {'seq': 6,'descr':'seek to # position','func':seek},
-             'S': {'seq': 7,'descr':'Store present position to seek #','func':seekStore},
-             'g': {'seq': 8,'descr':'send G-code to machine','func':gCode},
-             'm': {'seq': 9,'descr':'send M-code to machine','func':mCode},
-             'f': {'seq':10,'descr':'print a g-code file to machine','func':filePicker},
-             '1': {'seq':11,'descr':'set movement increment to 0.25','func':speed1},
-             '2': {'seq':12,'descr':'set movement increment to 0.1','func':speed2},
-             '3': {'seq':13,'descr':'set movement increment to 1.0','func':speed3},
-             '4': {'seq':14,'descr':'set movement increment to 10.0','func':speed4},
-             'W': {'seq':15,'descr':'Write save file','func':Write},
-             'R': {'seq':16,'descr':'Read save file','func':Read}}
+             'H': {'seq': 5,'descr':'home X Y and Z axes','func':homeAll},
+             'Z': {'seq': 6,'descr':'zero X Y and Z axes','func':zeroAll},
+             's': {'seq': 7,'descr':'seek to # position','func':seek},
+             'S': {'seq': 8,'descr':'Store present position to seek #','func':seekStore},
+             'g': {'seq': 9,'descr':'send G-code to machine','func':gCode},
+             'm': {'seq':10,'descr':'send M-code to machine','func':mCode},
+             'f': {'seq':11,'descr':'print a g-code file to machine','func':filePicker},
+             '`': {'seq':12,'descr':'execute a keystroke macro'},
+             '1': {'seq':13,'descr':'set movement increment to 0.25','func':speed1},
+             '2': {'seq':14,'descr':'set movement increment to 0.1','func':speed2},
+             '3': {'seq':15,'descr':'set movement increment to 1.0','func':speed3},
+             '4': {'seq':16,'descr':'set movement increment to 10.0','func':speed4},
+             'W': {'seq':17,'descr':'Write save file','func':Write},
+             'R': {'seq':18,'descr':'Read save file','func':Read}}
 
 screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
