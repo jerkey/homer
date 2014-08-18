@@ -125,7 +125,7 @@ def printCommands():
   screen.addstr(linenum,midX,"press command letter (arrowkeys, pgup/pgdn to move machine)")
   linenum += 1
   for i in commands:
-    screen.addstr(linenum+commands[i]['seq'],midX," {0}: {1}".format(i,commands[i]['descr']))
+    screen.addstr(linenum+commands[i]['seq'],midX," {0}: {1}".format(chr(i),commands[i]['descr']))
 
 def printInfo(text):
   # curpos = curses.getsyx()
@@ -239,25 +239,25 @@ def macro():
     else:
       printInfo("not a valid macro key")
 
-commands = { 'v': {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
-             'V': {'seq': 1,'descr':'M107 turn fan off','func':fanOff},
-             'Q': {'seq': 2,'descr':'Quit without saving','func':quit},
-             'q': {'seq': 3,'descr':'quit (and save)','func':saveQuit},
-             'h': {'seq': 4,'descr':'home X and Y axes','func':homeXY},
-             'H': {'seq': 5,'descr':'home X Y and Z axes','func':homeAll},
-             'Z': {'seq': 6,'descr':'zero X Y and Z axes','func':zeroAll},
-             's': {'seq': 7,'descr':'seek to # position','func':seek},
-             'S': {'seq': 8,'descr':'Store present position to seek #','func':seekStore},
-             'g': {'seq': 9,'descr':'send G-code to machine','func':gCode},
-             'm': {'seq':10,'descr':'send M-code to machine','func':mCode},
-             'f': {'seq':11,'descr':'print a g-code file to machine','func':filePicker},
-             '`': {'seq':12,'descr':'execute a keystroke macro','func':macro},
-             '1': {'seq':13,'descr':'set movement increment to 0.25','func':speed1},
-             '2': {'seq':14,'descr':'set movement increment to 0.1','func':speed2},
-             '3': {'seq':15,'descr':'set movement increment to 1.0','func':speed3},
-             '4': {'seq':16,'descr':'set movement increment to 10.0','func':speed4},
-             'W': {'seq':17,'descr':'Write save file','func':Write},
-             'R': {'seq':18,'descr':'Read save file','func':Read}}
+commands = { ord('v'): {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
+             ord('V'): {'seq': 1,'descr':'M107 turn fan off','func':fanOff},
+             ord('Q'): {'seq': 2,'descr':'Quit without saving','func':quit},
+             ord('q'): {'seq': 3,'descr':'quit (and save)','func':saveQuit},
+             ord('h'): {'seq': 4,'descr':'home X and Y axes','func':homeXY},
+             ord('H'): {'seq': 5,'descr':'home X Y and Z axes','func':homeAll},
+             ord('Z'): {'seq': 6,'descr':'zero X Y and Z axes','func':zeroAll},
+             ord('s'): {'seq': 7,'descr':'seek to ord( position','func':seek},
+             ord('S'): {'seq': 8,'descr':'Store present position to seek ord(','func':seekStore},
+             ord('g'): {'seq': 9,'descr':'send G-code to machine','func':gCode},
+             ord('m'): {'seq':10,'descr':'send M-code to machine','func':mCode},
+             ord('f'): {'seq':11,'descr':'print a g-code file to machine','func':filePicker},
+             ord('`'): {'seq':12,'descr':'execute a keystroke macro','func':macro},
+             ord('1'): {'seq':13,'descr':'set movement increment to 0.25','func':speed1},
+             ord('2'): {'seq':14,'descr':'set movement increment to 0.1','func':speed2},
+             ord('3'): {'seq':15,'descr':'set movement increment to 1.0','func':speed3},
+             ord('4'): {'seq':16,'descr':'set movement increment to 10.0','func':speed4},
+             ord('W'): {'seq':17,'descr':'Write save file','func':Write},
+             ord('R'): {'seq':18,'descr':'Read save file','func':Read}}
 
 screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
@@ -274,9 +274,9 @@ printInfo(ptr.init())
 printCommands()
 while True: # main loop
   press = screen.getch() # get the character pressed by the user
-  if commands.has_key(chr(press)): # if keystore is a known command in array
-    printInfo(commands[chr(press)]['descr']) # print the command description
-    commands[chr(press)]['func']() # run the appropriate subroutine
+  if commands.has_key(press): # if keystore is a known command in array
+    printInfo(commands[press]['descr']) # print the command description
+    commands[press]['func']() # run the appropriate subroutine
   elif press == curses.KEY_LEFT:  #this is pretty straightforward
     ptr.xm(increment)  #x axis minus
     present_position['x']-=increment  #this needs to be modular for scalar
