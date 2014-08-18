@@ -9,6 +9,13 @@ from subprocess import Popen, PIPE, call
 #set up globally scoped variables for telemetry
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
+filePath = "/home/smacbook/gcode/" # prefix for all filenames in files
+files = {ord('g') : {'name':'dispense green resist for tai crystal','filename':'tai1.g'},
+         ord('s') : {'name':'dispense solder paste for screw, post, tai','filename':'sold.g'},
+         ord('c') : {'name':'move plate to cook resist and return','filename':'cookr.g'}}
+macros = {ord('p') : {'name':'resist block and cam next','keys':'pfc'},
+          ord('d') : {'name':'dance','keys':'pcpc'},
+          ord('s') : {'name':'solder paste block','keys':'pfc'}}
 tools = {ord('e') : {'name':'extruder'}, ord('c') : {'name':'cam'}, ord('p') : {'name':'paste'}}
 for i in tools:
   for g in {'x','y','z'}:
@@ -96,16 +103,26 @@ def printFile(filename, ptr):
 
 def printCommands():
   for i in range(0, 10):
-    screen.addstr(9,0,"press s# to seek to a position, capital S# to store current position")
+    screen.addstr(9,0,"press s# to seek to a position, S# to store current position")
     screen.addstr(10+i,0," seek {0}: X{1} Y{2} Z{3}  {4}".format(i,seek_positions[i]['x'],seek_positions[i]['y'],seek_positions[i]['z'],seek_positions[i]['name']))
   linenum = 20
-  screen.addstr(linenum,0,"press tool letter to switch to that tool, Shift-letter to home that tool")
+  screen.addstr(linenum,0,"press tool letter to switch to tool, Shift-letter to home tool")
   linenum += 1
   for i in tools:
     screen.addstr(linenum,0," tool {0}: {4}:  X{1} Y{2} Z{3}".format(chr(i),tools[i]['x'],tools[i]['y'],tools[i]['z'],tools[i]['name'].ljust(10)))
     linenum += 1
+  screen.addstr(linenum,0,"press ` followed by a macro key to activate that macro")
+  linenum += 1
+  for i in macros:
+    screen.addstr(linenum,0," macro {0}: {1} = {2}".format(chr(i),macros[i]['name'],macros[i]['keys']))
+    linenum += 1
+  screen.addstr(linenum,0,"press f followed by a files key to print that g-code file")
+  linenum += 1
+  for i in files:
+    screen.addstr(linenum,0," files {0}: {1} = {2}".format(chr(i),files[i]['name'],files[i]['filename']))
+    linenum += 1
   linenum = 9
-  screen.addstr(linenum,midX,"press letter of a command (arrow keys and pgup/pgdn to move machine)")
+  screen.addstr(linenum,midX,"press command letter (arrowkeys, pgup/pgdn to move machine)")
   linenum += 1
   for i in commands:
     screen.addstr(linenum+commands[i]['seq'],midX," {0}: {1}".format(i,commands[i]['descr']))
@@ -204,10 +221,23 @@ def speed4():
   increment = 10.0
 
 def filePicker():
-  filename = "sline.g"
-  printInfo("Printing G-code file "+filename)
-  printFile(filename,ptr)
-  printInfo("Finished printing G-code file "+filename)
+  printInfo("Which file do you want to print?")
+  press = screen.getch()
+  if press in files:
+    filename = filePath+files[press]['filename']
+    printInfo("Printing G-code file "+filename)
+    printFile(filename,ptr)
+    printInfo("Finished printing G-code file "+filename)
+  else:
+    printInfo("not a valid files key")
+
+def macro():
+    printInfo("Which macro to execute?")
+    press = screen.getch()
+    if press in macros:
+      printInfo(macros[press]['name'])
+    else:
+      printInfo("not a valid macro key")
 
 commands = { 'v': {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
              'V': {'seq': 1,'descr':'M107 turn fan off','func':fanOff},
@@ -221,7 +251,7 @@ commands = { 'v': {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
              'g': {'seq': 9,'descr':'send G-code to machine','func':gCode},
              'm': {'seq':10,'descr':'send M-code to machine','func':mCode},
              'f': {'seq':11,'descr':'print a g-code file to machine','func':filePicker},
-             '`': {'seq':12,'descr':'execute a keystroke macro'},
+             '`': {'seq':12,'descr':'execute a keystroke macro','func':macro},
              '1': {'seq':13,'descr':'set movement increment to 0.25','func':speed1},
              '2': {'seq':14,'descr':'set movement increment to 0.1','func':speed2},
              '3': {'seq':15,'descr':'set movement increment to 1.0','func':speed3},
