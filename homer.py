@@ -79,12 +79,15 @@ def printFile(filename, ptr):
   except OSError:
     printInfo("error: could not open "+filename)
     return
+  printInfo("opened "+filename)
+  screen.refresh()
   line = fd.readline()
   for line in fd:
     line = line.rstrip().split(';')[0]
     if len(line) > 1:
-      ptr.cmnd(line)
       screen.addstr(line+"\n")
+      screen.refresh()
+      ptr.cmnd(line)
       now = time.time()
       ok = ptr.read1line()
       while not 'ok' in ok:
@@ -98,7 +101,6 @@ def printFile(filename, ptr):
   ptr.cmnd("G 91")
   ok = ok + ptr.waitOk()
   if ok != "": printInfo(ok)
-  time.sleep(5)
 
 def printCommands():
   for i in range(0, 10):
@@ -319,4 +321,7 @@ while True: # main loop
       tools[press][i] = present_position[i]
     printCommands() # update display of tool coordinates
 
+curses.nocbreak()
+screen.keypad(0)
+curses.echo()
 curses.endwin() #there's no place like home
