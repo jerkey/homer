@@ -1,0 +1,6 @@
+make the program use M114 to get current position before and after printing a file
+or consider using M114 to keep track of machine position (instead of software stored)
+
+use a file to load dictionary of files and descriptions for files menu
+
+add automatic function to open camera view

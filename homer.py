@@ -4,7 +4,6 @@
 import curses
 import ptr as p
 import os,datetime,time
-from subprocess import Popen, PIPE, call
 
 #set up globally scoped variables for telemetry
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
