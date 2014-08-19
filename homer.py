@@ -136,7 +136,8 @@ def printCommands():
 def printInfo(text):
   # curpos = curses.getsyx()
   screen.addstr(0,0,"mode = {0}".format(tools[tool_mode]['name'])+"       ")
-  screen.addstr(1,0,"absolute position: %.3f, %.3f, %.3f                     \n" % (present_position['x'],present_position['y'],present_position['z'])+str(text)+"\n")
+  screen.addstr(1,0,"absolute position: %.3f, %.3f, %.3f        "  % (present_position['x'],present_position['y'],present_position['z']))
+  screen.addstr(2,0,text.ljust(50))
 
 def fanOn():
   #ptr.cmnd("M106     ")
@@ -180,7 +181,7 @@ def zeroAll():
   printInfo( "zero all axes in software only")
 
 def seek():
-  printInfo("seek to which stored position? 0-9  ")
+  printInfo("seek to which stored position? 0-9")
   press = screen.getch()
   if press >= ord('0') and press <= ord('9'):
     if tool_mode != ord('c'):
@@ -188,12 +189,12 @@ def seek():
     for i in {'x','y','z'}:
       move_adder[i] = seek_positions[press-48][i] - present_position[i]
       present_position[i] += move_adder[i]
-    printInfo("seeking to stored position {0}                           ".format(chr(press)))
+    printInfo("seeking to stored position {0}".format(chr(press)))
     ptr.cmnd("G1 X{0} Y{1} Z{2} F8000".format(move_adder['x'],move_adder['y'],move_adder['z'])) #ptr.cmnd(
     if tool_mode != ord('c'):
       ptr.cmnd("G1 Z-5 F10000"); # move down 5 after traversing, if not on camera
   else:
-    printInfo("not a numeral, seek cancelled.                           ")
+    printInfo("not a numeral, seek cancelled.")
 
 def seekStore():
   printInfo("STORE POSITION to which stored position? 0-9  ")
@@ -204,7 +205,7 @@ def seekStore():
       # if tool_mode != ord('c'): # if we are not already in camera mode, compensate
       #   seek_positions[press-48][i] += tools[tool_mode][i] - tools[ord('c')][i] #add the offset to camera mode
   else:
-    screen.addstr(1,0,"not a numeral, store cancelled.                           ")
+    printInfo("not a numeral, seek cancelled.")
   printCommands() # update display of seek coordinates
 
 def gCode():
