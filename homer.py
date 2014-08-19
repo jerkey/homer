@@ -103,35 +103,40 @@ def printFile(filename, ptr):
   if ok != "": printInfo(ok)
 
 def printCommands():
-  for i in range(0, 10):
-    screen.addstr(9,0,"press s# to seek to a position, S# to store current position")
-    screen.addstr(10+i,0," seek {0}: X{1} Y{2} Z{3}  {4}".format(i,seek_positions[i]['x'],seek_positions[i]['y'],seek_positions[i]['z'],seek_positions[i]['name']))
-  linenum = 20
-  screen.addstr(linenum,0,"press tool letter to switch to tool, Shift-letter to home tool")
+  linenum = statusLines
+  screen.addstr(linenum,0,"press s# to seek to a position, S# to store current position")
   linenum += 1
-  for i in tools:
-    screen.addstr(linenum,0," tool {0}: {4}:  X{1} Y{2} Z{3}".format(chr(i),tools[i]['x'],tools[i]['y'],tools[i]['z'],tools[i]['name'].ljust(10)))
+  for i in range(0, 10):
+    screen.addstr(linenum,0," seek {0}: X{1} Y{2} Z{3}  {4}".format(i,seek_positions[i]['x'],seek_positions[i]['y'],seek_positions[i]['z'],seek_positions[i]['name']))
     linenum += 1
+  linenum += 1
   screen.addstr(linenum,0,"press ` followed by a macro key to activate that macro")
   linenum += 1
   for i in macros:
     screen.addstr(linenum,0," macro {0}: {1} = {2}".format(chr(i),macros[i]['name'],macros[i]['keys']))
     linenum += 1
+  linenum += 1
   screen.addstr(linenum,0,"press f followed by a files key to print that g-code file")
   linenum += 1
   for i in files:
     screen.addstr(linenum,0," files {0}: {1} = {2}".format(chr(i),files[i]['name'],files[i]['filename']))
     linenum += 1
-  linenum = 9
+  linenum = 0
   screen.addstr(linenum,midX,"press command letter (arrowkeys, pgup/pgdn to move machine)")
   linenum += 1
   for i in commands:
     screen.addstr(linenum+commands[i]['seq'],midX," {0}: {1}".format(chr(i),commands[i]['descr']))
+  linenum += len(commands)+1
+  screen.addstr(linenum,midX,"press tool letter to switch to tool, Shift-letter to home tool")
+  linenum += 1
+  for i in tools:
+    screen.addstr(linenum,midX," tool {0}: {4}:  X{1} Y{2} Z{3}".format(chr(i),tools[i]['x'],tools[i]['y'],tools[i]['z'],tools[i]['name'].ljust(10)))
+    linenum += 1
 
 def printInfo(text):
   # curpos = curses.getsyx()
-  screen.addstr(4,0,"mode = {0}".format(tools[tool_mode]['name'])+"       ")
-  screen.addstr(5,0,"absolute position: %.3f, %.3f, %.3f                     \n" % (present_position['x'],present_position['y'],present_position['z'])+str(text)+"\n")
+  screen.addstr(0,0,"mode = {0}".format(tools[tool_mode]['name'])+"       ")
+  screen.addstr(1,0,"absolute position: %.3f, %.3f, %.3f                     \n" % (present_position['x'],present_position['y'],present_position['z'])+str(text)+"\n")
 
 def fanOn():
   #ptr.cmnd("M106     ")
@@ -199,7 +204,7 @@ def seekStore():
       # if tool_mode != ord('c'): # if we are not already in camera mode, compensate
       #   seek_positions[press-48][i] += tools[tool_mode][i] - tools[ord('c')][i] #add the offset to camera mode
   else:
-    screen.addstr(5,0,"not a numeral, store cancelled.                           ")
+    screen.addstr(1,0,"not a numeral, store cancelled.                           ")
   printCommands() # update display of seek coordinates
 
 def gCode():
@@ -268,6 +273,7 @@ midX = int(screenSize[1]/2) # store the midpoint of the width of the screen
 screen.keypad(1)  #nothing works without this
 ptr=p.prntr()
 increment = 1.0
+statusLines = 4 # how many lines are used for changing data (left side of screen)
 tool_mode = ord('c') # you better have a valid tool in here to start with
 
 readData()
@@ -308,8 +314,8 @@ while True: # main loop
       for i in {'x','y','z'}:
         move_adder[i] = tools[press][i] - tools[tool_mode][i]
       tool_mode = press
-      screen.addstr(4,0,"mode = {0}".format(tools[tool_mode]['name'])+"       ")
-      screen.addstr(5,0,"moving machine to other toolhead                     ")
+      screen.addstr(0,0,"mode = {0}".format(tools[tool_mode]['name'])+"       ")
+      screen.addstr(1,0,"moving machine to other toolhead                     ")
       ptr.cmnd("G1 X{0} Y{1} Z{2} F7000".format(move_adder['x'],move_adder['y'],move_adder['z'])) #ptr.cmnd
     printInfo( "mode = {0}".format(tools[press]['name']))
 
