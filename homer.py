@@ -5,7 +5,7 @@ import curses
 import ptr as p
 import os,datetime,time
 
-#set up globally scoped variables for telemetry
+#set up globally scoped variables
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 filePath = "/home/smacbook/gcode/" # prefix for all filenames in files
@@ -80,7 +80,6 @@ def printFile(filename, ptr):
     printInfo("error: could not open "+filename)
     return
   printInfo("opened "+filename)
-  screen.refresh()
   line = fd.readline()
   for line in fd:
     line = line.rstrip().split(';')[0]
@@ -93,6 +92,7 @@ def printFile(filename, ptr):
       while not 'ok' in ok:
         if time.time() - now > 2.0: # seconds to timeout
           screen.addstr("no OK from printer")
+          screen.refresh()
           break
         ok = ptr.read1line()
   fd.close()
@@ -138,13 +138,14 @@ def printInfo(text):
   screen.addstr(0,0,"mode = {0}".format(tools[tool_mode]['name'])+"       ")
   screen.addstr(1,0,"absolute position: %.3f, %.3f, %.3f        "  % (present_position['x'],present_position['y'],present_position['z']))
   screen.addstr(2,0,text.ljust(50))
+  screen.refresh() # tell curses to actually show it now
 
 def fanOn():
-  #ptr.cmnd("M106     ")
+  ptr.cmnd("M106     ")
   printInfo("M106     ")
 
 def fanOff():
-  #ptr.cmnd("M107     ")
+  ptr.cmnd("M107     ")
   printInfo("M107     ")
 
 def saveQuit(): # save configuration before quitting
@@ -219,12 +220,16 @@ def mCode():
   ptr.cmnd("M{0}".format(moment))
 
 def speed1():
+  global increment
   increment = 0.025
 def speed2():
+  global increment
   increment = 0.1
 def speed3():
+  global increment
   increment = 1.0
 def speed4():
+  global increment
   increment = 10.0
 
 def filePicker():
