@@ -155,7 +155,7 @@ def saveQuit(): # save configuration before quitting
   noSaveQuit()
 
 def noSaveQuit(): # quit without saving
-  if cameraWorking:
+  if cameraActivated:
     cv2.destroyWindow("preview")
   curses.nocbreak()
   screen.keypad(0)
@@ -242,6 +242,7 @@ def seekStore():
       seek_positions[press-48][i] = present_position[i] # store position
       # if tool_mode != ord('c'): # if we are not already in camera mode, compensate
       #   seek_positions[press-48][i] += tools[tool_mode][i] - tools[ord('c')][i] #add the offset to camera mode
+      printInfo("STORED to position "+chr(press))
   else:
     printInfo("not a numeral, seek cancelled.")
   printCommands() # update display of seek coordinates
@@ -296,6 +297,7 @@ def cameraOnOff():
   global cameraActivated
   if cameraActivated: # then turn camera off
     cameraActivated = False
+    cv2.destroyWindow("preview")
     printInfo("camera shut off by user")
     return
   if cv2Imported: # otherwise, see if camera can be activated
