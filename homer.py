@@ -170,18 +170,20 @@ def Read():
   readData() # read config data from datafilename
   printCommands() # update display of tool coordinates
 
-def homeSome():
+def homeOne():
   homeList= ""
   for axes in home_switches:
-    homeList = homeList+str(axes).upper()
-  printInfo("home which axis? "+homeList)
+    homeList = homeList+str(axes)
+  printInfo("home which axis? choose "+homeList)
   press = screen.getch()
   while press == -1:
     press = screen.getch()
   if chr(press) in home_switches:
     ptr.cmnd("G28 "+chr(press & 223)) # CAPITALIZE axis letter
     present_position[chr(press)] = home_switches[chr(press)] # where are your limit switches?
-  printInfo( "homed machine axis "+chr(press & 223)) # CAPITALIZE axis letter
+    printInfo( "homed machine axis "+chr(press & 223)) # CAPITALIZE axis letter
+  else:
+    printInfo("Not a valid axis letter")
 
 def homeAll(): # home all axes in homeList
   homeList= ""
@@ -191,11 +193,26 @@ def homeAll(): # home all axes in homeList
   ptr.cmnd("G28 "+homeList)
   printInfo( "homed ALL machine axes "+homeList)
 
-def zeroAll():
-  present_position['x'] = 0
-  present_position['y'] = 0
-  present_position['z'] = 0
-  printInfo( "zero all axes in software only")
+def zeroOne():
+  zeroList= ""
+  for axes in present_position:
+    zeroList = zeroList+str(axes)
+  printInfo("zero which axis? "+zeroList)
+  press = screen.getch()
+  while press == -1:
+    press = screen.getch()
+  if chr(press) in present_position:
+    present_position[chr(press)] = 0.0
+    printInfo( "zeroed axis "+chr(press & 223)) # CAPITALIZE axis letter
+  else:
+    printInfo("Not a valid axis letter")
+
+def zeroAll(): # zero all axes in zeroList
+  zeroList= ""
+  for axes in present_position:
+    zeroList = zeroList+str(axes)
+    present_position[axes] = 0
+  printInfo( "zerod ALL software axes "+zeroList)
 
 def seek():
   printInfo("seek to which stored position? 0-9")
@@ -295,22 +312,23 @@ commands = { ord('v'): {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
              ord('V'): {'seq': 1,'descr':'M107 turn fan off','func':fanOff},
              ord('Q'): {'seq': 2,'descr':'Quit without saving','func':noSaveQuit},
              ord('q'): {'seq': 3,'descr':'quit (and save)','func':saveQuit},
-             ord('h'): {'seq': 4,'descr':'home a specific axis','func':homeSome},
-             ord('H'): {'seq': 5,'descr':'home ALL axes','func':homeAll},
-             ord('Z'): {'seq': 6,'descr':'zero X Y and Z axes','func':zeroAll},
-             ord('s'): {'seq': 7,'descr':'seek to ord( position','func':seek},
-             ord('S'): {'seq': 8,'descr':'Store present position to seek ord(','func':seekStore},
-             ord('g'): {'seq': 9,'descr':'send G-code to machine','func':gCode},
-             ord('m'): {'seq':10,'descr':'send M-code to machine','func':mCode},
-             ord('f'): {'seq':11,'descr':'print a g-code file to machine','func':filePicker},
-             ord('`'): {'seq':12,'descr':'execute a keystroke macro','func':macro},
-             ord('1'): {'seq':13,'descr':'set movement increment to 0.25','func':speed1},
-             ord('2'): {'seq':14,'descr':'set movement increment to 0.1','func':speed2},
-             ord('3'): {'seq':15,'descr':'set movement increment to 1.0','func':speed3},
-             ord('4'): {'seq':16,'descr':'set movement increment to 10.0','func':speed4},
-             ord('C'): {'seq':17,'descr':'turn on (or off) camera','func':cameraOnOff},
-             ord('W'): {'seq':18,'descr':'Write save file','func':Write},
-             ord('R'): {'seq':19,'descr':'Read save file','func':Read}}
+             ord('h'): {'seq': 4,'descr':'home a specific axis','func':homeOne},
+             ord('H'): {'seq': 5,'descr':'Home ALL axes','func':homeAll},
+             ord('z'): {'seq': 6,'descr':'zero a specific axis','func':zeroOne},
+             ord('Z'): {'seq': 7,'descr':'Zero ALL software axes','func':zeroAll},
+             ord('s'): {'seq': 8,'descr':'seek to ord( position','func':seek},
+             ord('S'): {'seq': 9,'descr':'Store present position to seek ord(','func':seekStore},
+             ord('g'): {'seq':10,'descr':'send G-code to machine','func':gCode},
+             ord('m'): {'seq':11,'descr':'send M-code to machine','func':mCode},
+             ord('f'): {'seq':12,'descr':'print a g-code file to machine','func':filePicker},
+             ord('`'): {'seq':13,'descr':'execute a keystroke macro','func':macro},
+             ord('1'): {'seq':14,'descr':'set movement increment to 0.25','func':speed1},
+             ord('2'): {'seq':15,'descr':'set movement increment to 0.1','func':speed2},
+             ord('3'): {'seq':16,'descr':'set movement increment to 1.0','func':speed3},
+             ord('4'): {'seq':17,'descr':'set movement increment to 10.0','func':speed4},
+             ord('C'): {'seq':18,'descr':'turn on (or off) camera','func':cameraOnOff},
+             ord('W'): {'seq':19,'descr':'Write save file','func':Write},
+             ord('R'): {'seq':20,'descr':'Read save file','func':Read}}
 
 screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
