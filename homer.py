@@ -6,6 +6,7 @@ import ptr as p
 import os,datetime,time
 
 #set up globally scoped variables
+cameraActivated = False
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 filePath = "/home/smacbook/gcode/" # prefix for all filenames in files
@@ -153,6 +154,8 @@ def saveQuit(): # save configuration before quitting
   noSaveQuit()
 
 def noSaveQuit(): # quit without saving
+  if cameraWorking:
+    cv2.destroyWindow("preview")
   curses.nocbreak()
   screen.keypad(0)
   curses.echo()
@@ -191,6 +194,8 @@ def zeroAll():
 def seek():
   printInfo("seek to which stored position? 0-9")
   press = screen.getch()
+  while press == -1:
+    press = screen.getch()
   if press >= ord('0') and press <= ord('9'):
     if tool_mode != ord('c'):
       ptr.cmnd("G1 Z5 F4000"); # move up 5 before traversing, if not on camera
@@ -207,6 +212,8 @@ def seek():
 def seekStore():
   printInfo("STORE POSITION to which stored position? 0-9  ")
   press = screen.getch()
+  while press == -1:
+    press = screen.getch()
   if press >= ord('0') and press <= ord('9'):
     for i in {'x','y','z'}:
       seek_positions[press-48][i] = present_position[i] # store position
@@ -242,6 +249,8 @@ def speed4():
 def filePicker():
   printInfo("Which file do you want to print?")
   press = screen.getch()
+  while press == -1:
+    press = screen.getch()
   if press in files:
     filename = filePath+files[press]['filename']
     printInfo("Printing G-code file "+filename)
@@ -251,12 +260,30 @@ def filePicker():
     printInfo("not a valid files key")
 
 def macro():
-    printInfo("Which macro to execute?")
+  printInfo("Which macro to execute?")
+  press = screen.getch()
+  while press == -1:
     press = screen.getch()
-    if press in macros:
-      printInfo(macros[press]['name'])
+  if press in macros:
+    printInfo(macros[press]['name'])
+  else:
+    printInfo("not a valid macro key")
+
+def cameraOnOff():
+  global cameraActivated
+  if cameraActivated: # then turn camera off
+    cameraActivated = False
+    printInfo("camera shut off by user")
+    return
+  if cv2Imported: # otherwise, see if camera can be activated
+    if cameraWorking:
+      cameraActivated = True
+      printInfo("camera opened successfully!")
     else:
-      printInfo("not a valid macro key")
+      printInfo("opencv loaded but camera cannot be opened")
+      return
+  else:
+    printInfo("could not import cv2 to open camera (need opencv2 for python)")
 
 commands = { ord('v'): {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
              ord('V'): {'seq': 1,'descr':'M107 turn fan off','func':fanOff},
@@ -275,12 +302,14 @@ commands = { ord('v'): {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
              ord('2'): {'seq':14,'descr':'set movement increment to 0.1','func':speed2},
              ord('3'): {'seq':15,'descr':'set movement increment to 1.0','func':speed3},
              ord('4'): {'seq':16,'descr':'set movement increment to 10.0','func':speed4},
-             ord('W'): {'seq':17,'descr':'Write save file','func':Write},
-             ord('R'): {'seq':18,'descr':'Read save file','func':Read}}
+             ord('C'): {'seq':17,'descr':'turn on (or off) camera','func':cameraOnOff},
+             ord('W'): {'seq':18,'descr':'Write save file','func':Write},
+             ord('R'): {'seq':19,'descr':'Read save file','func':Read}}
 
 screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
 curses.curs_set(0)
+screen.timeout(0)
 screenSize = screen.getmaxyx()
 midX = int(screenSize[1]/2) # store the midpoint of the width of the screen
 screen.keypad(1)  #nothing works without this
@@ -288,12 +317,32 @@ ptr=p.prntr()
 increment = 1.0
 statusLines = 4 # how many lines are used for changing data (left side of screen)
 tool_mode = ord('c') # you better have a valid tool in here to start with
+try:
+  import cv2
+  cv2.namedWindow("preview") # create the viewport
+  camera1 = cv2.VideoCapture(0) # choose camera1 number here
+  if camera1.isOpened(): # try to get the first frame
+    cameraWorking, frame = camera1.read()
+  cv2Imported = True
+except ImportError:
+  cv2Imported = False
 
 readData()
 printInfo(ptr.init())
 printCommands()
+
 while True: # main loop
-  press = screen.getch() # get the character pressed by the user
+  if cameraActivated:
+    cv2.putText(frame, "x", (310,240), cv2.FONT_HERSHEY_PLAIN, 4.0, (255,0,0), thickness=3)
+    cv2.imshow("preview", frame)
+    cameraWorking, frame = camera1.read()
+    key = cv2.waitKey(1) # Note This function is the only method in HighGUI that can fetch and handle events, so it needs to be called periodically for normal event processing unless HighGUI is used within an environment that takes care of event processing.
+    #printInfo(str(time.time()))
+    if key == 27: # exit on ESC (-1 if no key pressed)
+      cv2.destroyWindow("preview")
+      cameraActivated = False
+
+  press = screen.getch() # get the character pressed by the user (non blocking)
   if commands.has_key(press): # if keystore is a known command in array
     printInfo(commands[press]['descr']) # print the command description
     commands[press]['func']() # run the appropriate subroutine
