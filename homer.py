@@ -150,6 +150,13 @@ def fanOff():
 
 def saveQuit(): # save configuration before quitting
   saveData()
+  noSaveQuit()
+
+def noSaveQuit(): # quit without saving
+  curses.nocbreak()
+  screen.keypad(0)
+  curses.echo()
+  curses.endwin() #there's no place like home
   quit() #quit  ord values are important
 
 def Write():
@@ -253,7 +260,7 @@ def macro():
 
 commands = { ord('v'): {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
              ord('V'): {'seq': 1,'descr':'M107 turn fan off','func':fanOff},
-             ord('Q'): {'seq': 2,'descr':'Quit without saving','func':quit},
+             ord('Q'): {'seq': 2,'descr':'Quit without saving','func':noSaveQuit},
              ord('q'): {'seq': 3,'descr':'quit (and save)','func':saveQuit},
              ord('h'): {'seq': 4,'descr':'home X and Y axes','func':homeXY},
              ord('H'): {'seq': 5,'descr':'home X Y and Z axes','func':homeAll},
@@ -332,8 +339,3 @@ while True: # main loop
     for i in {'x','y','z'}:
       tools[press][i] = present_position[i]
     printCommands() # update display of tool coordinates
-
-curses.nocbreak()
-screen.keypad(0)
-curses.echo()
-curses.endwin() #there's no place like home
