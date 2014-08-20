@@ -8,6 +8,7 @@ import os,datetime,time
 #set up globally scoped variables
 cameraActivated = False
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
+home_switches = {'x': 240, 'y': 0, 'z': 0} # where does your machine go when it homes?
 present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 filePath = "/home/smacbook/gcode/" # prefix for all filenames in files
 files = {ord('g') : {'name':'dispense green resist for tai crystal','filename':'tai1.g'},
@@ -169,21 +170,26 @@ def Read():
   readData() # read config data from datafilename
   printCommands() # update display of tool coordinates
 
-def homeXY():
-  present_position['x'] = 240 # where are your limit switches?
-  present_position['y'] = 0
-  printInfo( "actually home machine XY")
-  ptr.hx()
-  ptr.hy()
+def homeSome():
+  homeList= ""
+  for axes in home_switches:
+    homeList = homeList+str(axes).upper()
+  printInfo("home which axis? "+homeList)
+  press = screen.getch()
+  while press == -1:
+    press = screen.getch()
+  if chr(press) in home_switches:
+    ptr.cmnd("G28 "+chr(press & 223)) # CAPITALIZE axis letter
+    present_position[chr(press)] = home_switches[chr(press)] # where are your limit switches?
+  printInfo( "homed machine axis "+chr(press & 223)) # CAPITALIZE axis letter
 
-def homeAll():
-  present_position['x'] = 240 # where are your limit switches?
-  present_position['y'] = 0
-  present_position['z'] = 0
-  printInfo( "home machine XYZ")
-  ptr.hx()
-  ptr.hy()
-  ptr.hz()
+def homeAll(): # home all axes in homeList
+  homeList= ""
+  for axes in home_switches:
+    homeList = homeList+str(axes).upper()
+    present_position[axes] = home_switches[axes] # where are your limit switches?
+  ptr.cmnd("G28 "+homeList)
+  printInfo( "homed ALL machine axes "+homeList)
 
 def zeroAll():
   present_position['x'] = 0
@@ -289,8 +295,8 @@ commands = { ord('v'): {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
              ord('V'): {'seq': 1,'descr':'M107 turn fan off','func':fanOff},
              ord('Q'): {'seq': 2,'descr':'Quit without saving','func':noSaveQuit},
              ord('q'): {'seq': 3,'descr':'quit (and save)','func':saveQuit},
-             ord('h'): {'seq': 4,'descr':'home X and Y axes','func':homeXY},
-             ord('H'): {'seq': 5,'descr':'home X Y and Z axes','func':homeAll},
+             ord('h'): {'seq': 4,'descr':'home a specific axis','func':homeSome},
+             ord('H'): {'seq': 5,'descr':'home ALL axes','func':homeAll},
              ord('Z'): {'seq': 6,'descr':'zero X Y and Z axes','func':zeroAll},
              ord('s'): {'seq': 7,'descr':'seek to ord( position','func':seek},
              ord('S'): {'seq': 8,'descr':'Store present position to seek ord(','func':seekStore},
