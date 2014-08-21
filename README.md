@@ -1,5 +1,6 @@
 #homer
 ##Human Operated Machine Environment Runtime
+![homey](https://raw.github.com/jerkey/homer/master/spinningdesk.gif)
 
 it is also an *homage* to Homer Simpson who sits at a giant control panel, pushing buttons to make things happen.
 
@@ -17,4 +18,4 @@ to get the camera view to work, you also need opencv2
 
 license:  MIT
 ![homey](https://raw.github.com/jerkey/homer/master/screenshot.png)
-![homey](https://raw.github.com/jerkey/homer/master/spinningdesk.gif)
+![homey](https://raw.github.com/jerkey/homer/master/screenshot-cam.png)
