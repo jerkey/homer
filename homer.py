@@ -23,14 +23,15 @@ for i in tools:
     tools[i][g] = 0.0
 seek_positions = { n : {'name': '', 'x': 0.0, 'y': 0.0, 'z': 0.0} for n in range(10)} # create empty array
 
-datafilename = 'data.engine'
+datafilename = 'homer.dat'
 
-def saveData(): # store the tools dictionary to a file, after renaming old one to datetime
+def saveData(): # store the tools dictionary to a file, after renaming old one
   errText = ""
   try:
-    os.rename(datafilename,datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')+".dat")
+    #os.rename(datafilename,datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')+".dat") #timestamped backups
+    os.rename(datafilename,"homer.dat.old")
   except OSError:
-    errText = "old "+datafilename+" missing. "
+    errText = "(creating new) "
   printInfo(errText+"writing tools to "+datafilename)
   with open(datafilename,'w') as dataFile:
     for i in tools:
