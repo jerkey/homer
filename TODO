@@ -4,3 +4,7 @@ or consider using M114 to keep track of machine position (instead of software st
 at least use M114 to grab machine coordinates after homing
 
 use a file to load dictionary of files and descriptions for files menu
+
+actually make macros work
+
+change stored positions to an empty dictionary, so you can use any key for storage
