@@ -354,6 +354,7 @@ try:
   cv2Imported = True
 except ImportError:
   cv2Imported = False
+  cameraWorking = False
 
 readData()
 printInfo(ptr.init())
