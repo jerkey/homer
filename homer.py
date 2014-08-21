@@ -138,8 +138,8 @@ def printCommands():
 
 def printInfo(text):
   # curpos = curses.getsyx()
-  screen.addstr(0,0,"mode = {0}".format(tools[tool_mode]['name'])+"       ")
-  screen.addstr(1,0,"absolute position: %.3f, %.3f, %.3f        "  % (present_position['x'],present_position['y'],present_position['z']))
+  screen.addstr(0,0,str("mode = {0}".format(tools[tool_mode]['name'])+"     movement increment = "+str(increment)).ljust(50))
+  screen.addstr(1,0,str("absolute position: %.3f, %.3f, %.3f        "  % (present_position['x'],present_position['y'],present_position['z'])).ljust(50))
   screen.addstr(2,0,text.ljust(50))
   screen.refresh() # tell curses to actually show it now
 
@@ -324,12 +324,12 @@ commands = { ord('v'): {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
              ord('g'): {'seq':10,'descr':'send G-code to machine','func':gCode},
              ord('m'): {'seq':11,'descr':'send M-code to machine','func':mCode},
              ord('f'): {'seq':12,'descr':'print a g-code file to machine','func':filePicker},
-             ord('`'): {'seq':13,'descr':'execute a keystroke macro','func':macro},
+             ord('`'): {'seq':13,'descr':'execute a keystroke macro (no work yet)','func':macro},
              ord('1'): {'seq':14,'descr':'set movement increment to 0.25','func':speed1},
              ord('2'): {'seq':15,'descr':'set movement increment to 0.1','func':speed2},
              ord('3'): {'seq':16,'descr':'set movement increment to 1.0','func':speed3},
              ord('4'): {'seq':17,'descr':'set movement increment to 10.0','func':speed4},
-             ord('C'): {'seq':18,'descr':'turn on (or off) camera','func':cameraOnOff},
+            ord('\\'): {'seq':18,'descr':'turn on (or off) camera','func':cameraOnOff},
              ord('W'): {'seq':19,'descr':'Write save file','func':Write},
              ord('R'): {'seq':20,'descr':'Read save file','func':Read}}
 
