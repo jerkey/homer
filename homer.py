@@ -346,6 +346,7 @@ statusLines = 4 # how many lines are used for changing data (left side of screen
 tool_mode = ord('c') # you better have a valid tool in here to start with
 try:
   import cv2
+  os.environ["DISPLAY"] = ":0" # tell it to open the camera on the local machine even if we're remote
   cv2.namedWindow("preview") # create the viewport
   camera1 = cv2.VideoCapture(0) # choose camera1 number here
   if camera1.isOpened(): # try to get the first frame
