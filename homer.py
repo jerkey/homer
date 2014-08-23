@@ -85,6 +85,7 @@ def printFile(filename, ptr):
   except IOError:
     printInfo("error: could not open "+filename)
     return
+  screen.erase() # we are going to print gcode to the screen, so erase all else
   printInfo("opened "+filename)
   screen.addstr("\n")
   line = fd.readline()
