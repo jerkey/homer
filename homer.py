@@ -82,7 +82,7 @@ def readData(): # store the tools dictionary to a file, after renaming old one t
 def printFile(filename, ptr):
   try:
     fd = open(filename,'r')
-  except OSError:
+  except IOError:
     printInfo("error: could not open "+filename)
     return
   printInfo("opened "+filename)
@@ -102,6 +102,7 @@ def printFile(filename, ptr):
           break
         ok = ptr.read1line()
   fd.close()
+  printInfo("Finished printing G-code file "+filename)
   ptr.cmnd("G1 F2000")
   ok = ptr.waitOk()
   ptr.cmnd("G 91")
@@ -287,7 +288,6 @@ def filePicker():
     filename = filePath+files[press]['filename']
     printInfo("Printing G-code file "+filename)
     printFile(filename,ptr)
-    printInfo("Finished printing G-code file "+filename)
   else:
     printInfo("not a valid files key")
 
