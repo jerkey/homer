@@ -86,6 +86,7 @@ def printFile(filename, ptr):
     printInfo("error: could not open "+filename)
     return
   printInfo("opened "+filename)
+  screen.addstr("\n")
   line = fd.readline()
   for line in fd:
     line = line.rstrip().split(';')[0]
@@ -102,12 +103,19 @@ def printFile(filename, ptr):
           break
         ok = ptr.read1line()
   fd.close()
-  printInfo("Finished printing G-code file "+filename)
+  screen.addstr("Finished printing G-code file  "+filename+"  (press any key)")
+  screen.refresh()
   ptr.cmnd("G1 F2000")
   ok = ptr.waitOk()
   ptr.cmnd("G 91")
   ok = ok + ptr.waitOk()
   if ok != "": printInfo(ok)
+  press = screen.getch()
+  while press == -1:
+    press = screen.getch()
+  screen.erase()
+  printCommands()
+  printInfo("Printed "+filename)
 
 def printCommands():
   linenum = statusLines
