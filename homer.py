@@ -11,13 +11,16 @@ move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 home_switches = {'x': 240, 'y': 0, 'z': 0} # where does your machine go when it homes?
 present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 filePath = "/home/smacbook/gcode/" # prefix for all filenames in files
-files = {ord('g') : {'name':'dispense green resist for tai crystal','filename':'tai1.g'},
-         ord('s') : {'name':'dispense solder paste for screw, post, tai','filename':'sold.g'},
-         ord('c') : {'name':'move plate to cook resist and return','filename':'cookr.g'}}
+files = {ord('g') : {'name':'green resist for tai crystal','filename':'tai1.g'},
+         ord('s') : {'name':'solder paste for screw, post, tai','filename':'sold.g'},
+         ord('c') : {'name':'move plate to and return','filename':'cookr.g'}}
 macros = {ord('p') : {'name':'resist block and cam next','keys':'pfc'},
           ord('d') : {'name':'dance','keys':'pcpc'},
           ord('s') : {'name':'solder paste block','keys':'pfc'}}
-tools = {ord('e') : {'name':'extruder'}, ord('c') : {'name':'cam'}, ord('p') : {'name':'paste'}}
+tools = {ord('e') : {'name':'plastic extruder'},
+         ord('c') : {'name':'camera'},
+         ord('g') : {'name':'green goo'},
+         ord('p') : {'name':'solder paste'}}
 for i in tools:
   for g in {'x','y','z'}:
     tools[i][g] = 0.0
@@ -107,30 +110,30 @@ def printFile(filename, ptr):
 
 def printCommands():
   linenum = statusLines
-  screen.addstr(linenum,0,"press s# to seek to a position, S# to store current position")
+  screen.addstr(linenum,0,"seek position memory registers")
   linenum += 1
   for i in range(0, 10):
     screen.addstr(linenum,0," seek {0}: X{1} Y{2} Z{3}  {4}".format(i,seek_positions[i]['x'],seek_positions[i]['y'],seek_positions[i]['z'],seek_positions[i]['name']))
     linenum += 1
   linenum += 1
-  screen.addstr(linenum,0,"press ` followed by a macro key to activate that macro")
+  screen.addstr(linenum,0,"press ` and a macro key to activate a macro")
   linenum += 1
   for i in macros:
     screen.addstr(linenum,0," macro {0}: {1} = {2}".format(chr(i),macros[i]['name'],macros[i]['keys']))
     linenum += 1
   linenum += 1
-  screen.addstr(linenum,0,"press f followed by a files key to print that g-code file")
+  screen.addstr(linenum,0,"press f and a key to print a g-code file")
   linenum += 1
   for i in files:
     screen.addstr(linenum,0," files {0}: {1} = {2}".format(chr(i),files[i]['name'],files[i]['filename']))
     linenum += 1
   linenum = 0
-  screen.addstr(linenum,midX,"press command letter (arrowkeys, ]/pgup amd [/pgdn to move machine)")
+  screen.addstr(linenum,midX,"command keys (arrowkeys, ]/pgup amd [/pgdn to move machine)")
   linenum += 1
   for i in commands:
     screen.addstr(linenum+commands[i]['seq'],midX," {0}: {1}".format(chr(i),commands[i]['descr']))
   linenum += len(commands)+1
-  screen.addstr(linenum,midX,"press tool letter to switch to tool, Shift-letter to home tool")
+  screen.addstr(linenum,midX,"press letter to switch tools, Shift- to home tool")
   linenum += 1
   for i in tools:
     screen.addstr(linenum,midX," tool {0}: {4}:  X{1} Y{2} Z{3}".format(chr(i),tools[i]['x'],tools[i]['y'],tools[i]['z'],tools[i]['name'].ljust(10)))
