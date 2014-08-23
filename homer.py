@@ -89,6 +89,7 @@ def printFile(filename, ptr):
   screen.addstr("\n")
   line = fd.readline()
   for line in fd:
+    updateCamera()
     line = line.rstrip().split(';')[0]
     if len(line) > 1:
       screen.addstr(line+"\n")
@@ -97,10 +98,11 @@ def printFile(filename, ptr):
       now = time.time()
       ok = ptr.read1line()
       while not 'ok' in ok:
-        if time.time() - now > 2.0: # seconds to timeout
+        if time.time() - now > 4.0: # seconds to timeout
           screen.addstr("no OK from printer")
           screen.refresh()
           break
+        updateCamera()
         ok = ptr.read1line()
   fd.close()
   screen.addstr("Finished printing G-code file  "+filename+"  (press any key)")
@@ -113,6 +115,7 @@ def printFile(filename, ptr):
   press = screen.getch()
   while press == -1:
     press = screen.getch()
+    updateCamera()
   screen.erase()
   printCommands()
   printInfo("Printed "+filename)
@@ -326,6 +329,18 @@ def cameraOnOff():
   else:
     printInfo("could not import cv2 to open camera (need opencv2 for python)")
 
+def updateCamera():
+  global cameraActivated, frame
+  if cameraActivated:
+    cv2.putText(frame, "x", (310,240), cv2.FONT_HERSHEY_PLAIN, 4.0, (255,0,0), thickness=3)
+    cv2.imshow("preview", frame)
+    cameraWorking, frame = camera1.read()
+    key = cv2.waitKey(1) # Note This function is the only method in HighGUI that can fetch and handle events, so it needs to be called periodically for normal event processing unless HighGUI is used within an environment that takes care of event processing.
+    #printInfo(str(time.time()))
+    if key == 27: # exit on ESC (-1 if no key pressed)
+      cv2.destroyWindow("preview")
+      cameraActivated = False
+
 commands = { ord('v'): {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
              ord('V'): {'seq': 1,'descr':'M107 turn fan off','func':fanOff},
              ord('Q'): {'seq': 2,'descr':'Quit without saving','func':noSaveQuit},
@@ -376,16 +391,7 @@ printInfo(ptr.init())
 printCommands()
 
 while True: # main loop
-  if cameraActivated:
-    cv2.putText(frame, "x", (310,240), cv2.FONT_HERSHEY_PLAIN, 4.0, (255,0,0), thickness=3)
-    cv2.imshow("preview", frame)
-    cameraWorking, frame = camera1.read()
-    key = cv2.waitKey(1) # Note This function is the only method in HighGUI that can fetch and handle events, so it needs to be called periodically for normal event processing unless HighGUI is used within an environment that takes care of event processing.
-    #printInfo(str(time.time()))
-    if key == 27: # exit on ESC (-1 if no key pressed)
-      cv2.destroyWindow("preview")
-      cameraActivated = False
-
+  updateCamera()
   press = screen.getch() # get the character pressed by the user (non blocking)
   if commands.has_key(press): # if keystore is a known command in array
     printInfo(commands[press]['descr']) # print the command description
