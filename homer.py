@@ -141,22 +141,22 @@ def printCommands():
     screen.addstr(linenum,0," files {0}: {1} = {2}".format(chr(i),files[i]['name'],files[i]['filename']))
     linenum += 1
   linenum = 0
-  screen.addstr(linenum,midX,"command keys (arrowkeys, ]/pgup amd [/pgdn to move machine)")
+  screen.addstr(linenum,midX,"command keys (arrowkeys, ]/pgup amd [/pgdn to move machine)".ljust(midX))
   linenum += 1
   for i in commands:
-    screen.addstr(linenum+commands[i]['seq'],midX," {0}: {1}".format(chr(i),commands[i]['descr']))
+    screen.addstr(linenum+commands[i]['seq'],midX,str(" {0}: {1}".format(chr(i),commands[i]['descr'])).ljust(midX))
   linenum += len(commands)+1
-  screen.addstr(linenum,midX,"press letter to switch tools, Shift- to home tool")
+  screen.addstr(linenum,midX,"press letter to switch tools, Shift- to home tool".ljust(midX))
   linenum += 1
   for i in tools:
-    screen.addstr(linenum,midX," tool {0}: {4}:  X{1} Y{2} Z{3}".format(chr(i),tools[i]['x'],tools[i]['y'],tools[i]['z'],tools[i]['name'].ljust(10)))
+    screen.addstr(linenum,midX,str(" tool {0}: {4}:  X{1} Y{2} Z{3}".format(chr(i),tools[i]['x'],tools[i]['y'],tools[i]['z'],tools[i]['name']).ljust(10)))
     linenum += 1
 
 def printInfo(text):
   # curpos = curses.getsyx()
-  screen.addstr(0,0,str("mode = {0}".format(tools[tool_mode]['name'])+"     movement increment = "+str(increment)).ljust(50))
-  screen.addstr(1,0,str("absolute position: %.3f, %.3f, %.3f        "  % (present_position['x'],present_position['y'],present_position['z'])).ljust(50))
-  screen.addstr(2,0,text.ljust(50))
+  screen.addstr(0,0,str("mode = {0}".format(tools[tool_mode]['name'])+"     movement increment = "+str(increment)).ljust(midX))
+  screen.addstr(1,0,str("absolute position: %.3f, %.3f, %.3f        "  % (present_position['x'],present_position['y'],present_position['z'])).ljust(midX))
+  screen.addstr(2,0,text.ljust(midX))
   screen.refresh() # tell curses to actually show it now
 
 def fanOn():
