@@ -125,7 +125,7 @@ def printCommands():
     screen.addstr(linenum,0," files {0}: {1} = {2}".format(chr(i),files[i]['name'],files[i]['filename']))
     linenum += 1
   linenum = 0
-  screen.addstr(linenum,midX,"press command letter (arrowkeys, pgup/pgdn to move machine)")
+  screen.addstr(linenum,midX,"press command letter (arrowkeys, ]/pgup amd [/pgdn to move machine)")
   linenum += 1
   for i in commands:
     screen.addstr(linenum+commands[i]['seq'],midX," {0}: {1}".format(chr(i),commands[i]['descr']))
@@ -390,11 +390,11 @@ while True: # main loop
     ptr.ym(increment)
     present_position['y']-=increment  #this needs to be modular for scalar
     printInfo( "back ")
-  elif press == curses.KEY_PPAGE:  # pageup
+  elif (press == curses.KEY_PPAGE) or (press == ord(']')):  # pageup
     ptr.zp(increment)
     present_position['z']+=increment #this needs to be modular for scalar
     printInfo( "up   ")
-  elif press == curses.KEY_NPAGE:  # pagedown
+  elif (press == curses.KEY_NPAGE) or (press == ord('[')):  # pagedown
     ptr.zm(increment)
     present_position['z']-=increment  #this needs to be modular for scalar
     printInfo( "down ")
