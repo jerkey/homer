@@ -1,5 +1,3 @@
-fix broken offseting when switching tools
-
 make the program use M114 to get current position before and after printing a file
 or consider using M114 to keep track of machine position (instead of software stored)
 
@@ -12,5 +10,3 @@ actually make macros work
 change stored positions to an empty dictionary, so you can use any key for storage
 
 make increment persistent in save file
-
-make G and M codes work

@@ -264,15 +264,38 @@ def seekStore():
     printInfo("not a numeral, seek cancelled.")
   printCommands() # update display of seek coordinates
 
-def gCode():
-  moment = screen.getstr()
-  printInfo("G"+moment)
-  ptr.cmnd("G{0}".format(moment))
+def gCode(): # send a command starting with G
+  sendCode("G")
 
-def mCode():
-  moment = screen.getstr()
-  printInfo("M"+moment)
-  ptr.cmnd("M{0}".format(moment))
+def mCode(): # send a command starting with M
+  sendCode("M")
+
+def sendCode(prefix):
+  gcode = prefix # start command with whatever we were told to start with
+  screen.addstr(3,0,"enter "+prefix+"-code to be sent (ESC to cancel)")
+  printInfo(gcode)
+  press = -1
+  while press not in {27, 10, 13, curses.KEY_ENTER}: # until escape or enter
+    press = -1 # get another key
+    while press == -1:
+      press = screen.getch()
+    if press == curses.KEY_BACKSPACE: # user hit backspace
+      gcode = gcode[:-1] # remove last character
+    else:
+      gcode = gcode + chr(press).upper() # capitalize everything typed
+    printInfo(gcode) # update the display
+
+  if press == 27: # if user hit escape OR an F-key that is escaped
+    press = screen.getch() # if an escape sequence like F1 is hit, grab the second char (if there)
+    screen.addstr(3,0," ".ljust(40)) # clear g-code entering instruction line
+    printInfo("cancelled "+prefix+" code by pressing ESC")
+    return
+
+  gcode = gcode[:-1] # remove "enter" character from end
+  ptr.cmnd(gcode) # actually send it to printer
+  screen.addstr(3,0," ".ljust(40)) # clear g-code entering instruction line
+  printInfo("sent "+gcode)
+  printCommands()
 
 def speed1():
   global increment
