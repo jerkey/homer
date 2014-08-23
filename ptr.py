@@ -38,7 +38,7 @@ class prntr:
 
   def cmnd(self, cmd):
     self.com.flushInput()
-    self.com.write(cmd[:-1]+"\r\n")
+    self.com.write(cmd+"\r\n") # not cmd[:-1]+"\r\n")
     return #self.com.readlines()
 
   def read1line(self):
