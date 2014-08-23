@@ -261,15 +261,19 @@ def mCode():
 def speed1():
   global increment
   increment = 0.025
+  printInfo('set movement increment to '+str(increment))
 def speed2():
   global increment
   increment = 0.1
+  printInfo('set movement increment to '+str(increment))
 def speed3():
   global increment
   increment = 1.0
+  printInfo('set movement increment to '+str(increment))
 def speed4():
   global increment
   increment = 10.0
+  printInfo('set movement increment to '+str(increment))
 
 def filePicker():
   printInfo("Which file do you want to print?")
