@@ -2,13 +2,10 @@ import sys
 import serial
 import time
 
-serialPort = '/dev/ttyACM0'
-baudRate = 230400
-
 class prntr:
   #this is the base class for all printer communication
 
-  def init(self ): #anything that needs to happen when the device connects
+  def init(self, serialPort , baudRate): #anything that needs to happen when the device connects
     try:
       self.com = serial.Serial(serialPort, baudRate, timeout = 1)
     except:

@@ -6,6 +6,8 @@ import ptr as p
 import os,datetime,time
 
 #set up globally scoped variables
+serialPort = '/dev/ttyACM0'
+baudRate = 230400
 cameraActivated = False
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 home_switches = {'x': 240, 'y': 0, 'z': 0} # where does your machine go when it homes?
@@ -98,6 +100,7 @@ def printFile(filename, ptr):
       ptr.cmnd(line)
       now = time.time()
       ok = ptr.read1line()
+      updateCamera()
       while not 'ok' in ok:
         if time.time() - now > 4.0: # seconds to timeout
           screen.addstr("no OK from printer")
@@ -356,9 +359,9 @@ def cameraOnOff():
 def updateCamera():
   global cameraActivated, frame
   if cameraActivated:
+    cameraWorking, frame = camera1.read()
     cv2.putText(frame, "x", (310,240), cv2.FONT_HERSHEY_PLAIN, 4.0, (255,0,0), thickness=3)
     cv2.imshow("preview", frame)
-    cameraWorking, frame = camera1.read()
     key = cv2.waitKey(1) # Note This function is the only method in HighGUI that can fetch and handle events, so it needs to be called periodically for normal event processing unless HighGUI is used within an environment that takes care of event processing.
     #printInfo(str(time.time()))
     if key == 27: # exit on ESC (-1 if no key pressed)
@@ -411,7 +414,7 @@ except ImportError:
   cameraWorking = False
 
 readData()
-printInfo(ptr.init())
+printInfo(ptr.init(serialPort,baudRate))
 printCommands()
 
 while True: # main loop
