@@ -89,25 +89,15 @@ def printFile(filename, ptr):
     return
   screen.erase() # we are going to print gcode to the screen, so erase all else
   printInfo("opened "+filename)
-  screen.addstr("\n")
-  line = fd.readline()
+  screen.addstr("\n") # we are going to print the gcode to the screen, so newline
+  line = fd.readline() # read the first line of the file
   for line in fd:
-    updateCamera()
-    line = line.rstrip().split(';')[0]
-    if len(line) > 1:
-      screen.addstr(line+"\n")
+    line = line.rstrip().split(';')[0] # strip out comments, if any
+    if len(line) > 1: # if any non-comment text, send it to printer
+      ptr.cmnd(line) # send this command to the printer
+      screen.addstr(line+ptr.waitOk()+"\n") # wait for OK and print errors
       screen.refresh()
-      ptr.cmnd(line)
-      now = time.time()
-      ok = ptr.read1line()
       updateCamera()
-      while not 'ok' in ok:
-        if time.time() - now > 4.0: # seconds to timeout
-          screen.addstr("no OK from printer")
-          screen.refresh()
-          break
-        updateCamera()
-        ok = ptr.read1line()
   fd.close()
   screen.addstr("Finished printing G-code file  "+filename+"  (press any key)")
   screen.refresh()
