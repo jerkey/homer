@@ -9,6 +9,7 @@ import os,datetime,time
 serialPort = '/dev/ttyACM0'
 baudRate = 230400
 cameraActivated = False
+macro_buffer = [] # put any startup commands in here, as integers with ord() or curses.KEY_whatever
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 home_switches = {'x': 240, 'y': 0, 'z': 0} # where does your machine go when it homes?
 present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
@@ -106,10 +107,7 @@ def printFile(filename, ptr):
   ptr.cmnd("G 91")
   ok = ok + ptr.waitOk()
   if ok != "": printInfo(ok)
-  press = screen.getch()
-  while press == -1:
-    press = screen.getch()
-    updateCamera()
+  press = getKeyOrMacro()
   screen.erase()
   printCommands()
   printInfo("Printed "+filename)
@@ -185,9 +183,7 @@ def homeOne():
   for axes in home_switches:
     homeList = homeList+str(axes)
   printInfo("home which axis? choose "+homeList)
-  press = screen.getch()
-  while press == -1:
-    press = screen.getch()
+  press = getKeyOrMacro()
   if chr(press) in home_switches:
     ptr.cmnd("G28 "+chr(press & 223)) # CAPITALIZE axis letter
     present_position[chr(press)] = home_switches[chr(press)] # where are your limit switches?
@@ -208,9 +204,7 @@ def zeroOne():
   for axes in present_position:
     zeroList = zeroList+str(axes)
   printInfo("zero which axis? "+zeroList)
-  press = screen.getch()
-  while press == -1:
-    press = screen.getch()
+  press = getKeyOrMacro()
   if chr(press) in present_position:
     present_position[chr(press)] = 0.0
     printInfo( "zeroed axis "+chr(press & 223)) # CAPITALIZE axis letter
@@ -226,9 +220,7 @@ def zeroAll(): # zero all axes in zeroList
 
 def seek():
   printInfo("seek to which stored position? 0-9")
-  press = screen.getch()
-  while press == -1:
-    press = screen.getch()
+  press = getKeyOrMacro()
   if press >= ord('0') and press <= ord('9'):
     if tool_mode != ord('c'):
       ptr.cmnd("G1 Z5 F4000"); # move up 5 before traversing, if not on camera
@@ -244,9 +236,7 @@ def seek():
 
 def seekStore():
   printInfo("STORE POSITION to which stored position? 0-9  ")
-  press = screen.getch()
-  while press == -1:
-    press = screen.getch()
+  press = getKeyOrMacro()
   if press >= ord('0') and press <= ord('9'):
     for i in {'x','y','z'}:
       seek_positions[press-48][i] = present_position[i] # store position
@@ -269,9 +259,7 @@ def sendCode(prefix):
   printInfo(gcode)
   press = -1
   while press not in {27, 10, 13, curses.KEY_ENTER}: # until escape or enter
-    press = -1 # get another key
-    while press == -1:
-      press = screen.getch()
+    press = getKeyOrMacro()
     if press == curses.KEY_BACKSPACE: # user hit backspace
       gcode = gcode[:-1] # remove last character
     else:
@@ -309,9 +297,7 @@ def speed4():
 
 def filePicker():
   printInfo("Which file do you want to print?")
-  press = screen.getch()
-  while press == -1:
-    press = screen.getch()
+  press = getKeyOrMacro()
   if press in files:
     filename = filePath+files[press]['filename']
     printInfo("Printing G-code file "+filename)
@@ -320,12 +306,16 @@ def filePicker():
     printInfo("not a valid files key")
 
 def macro():
+  global macro_buffer
   printInfo("Which macro to execute?")
-  press = screen.getch()
-  while press == -1:
-    press = screen.getch()
+  press = getKeyOrMacro()
   if press in macros:
-    printInfo(macros[press]['name'])
+    screen.addstr(3,0,macros[press]['name']) # print the macro name (will be erased by getKeyOrMacro)
+    if isinstance(macros[press]['keys'],str): # macro is a string of letters to press
+      for i in macros[press]['keys']:
+        macro_buffer.append(ord(i)) # make macro_buffer a list of integers from the letters
+    if isinstance(macros[press]['keys'],list): # macro is a list of ord() and curses.KEY_stuff
+      macro_buffer = macros[press]['keys'] # just copy the list of ints
   else:
     printInfo("not a valid macro key")
 
@@ -354,9 +344,22 @@ def updateCamera():
     cv2.imshow("preview", frame)
     key = cv2.waitKey(1) # Note This function is the only method in HighGUI that can fetch and handle events, so it needs to be called periodically for normal event processing unless HighGUI is used within an environment that takes care of event processing.
     #printInfo(str(time.time()))
-    if key == 27: # exit on ESC (-1 if no key pressed)
+    if key == 27: # exit on ESC (-1 if no key pressed) in preview window
       cv2.destroyWindow("preview")
       cameraActivated = False
+
+def getKeyOrMacro(): # return a keypress, or a macro stroke if there is one
+  if len(macro_buffer) == 0:
+    press = screen.getch()
+    while press == -1:
+      press = screen.getch()
+      updateCamera()
+    return press
+  else:
+    updateCamera()
+    if len(macro_buffer) == 1: # last command, let's clear line 3 since macro is over
+      screen.addstr(3,0," ".ljust(midX));
+    return macro_buffer.pop(0) # give the first thing in the buffer as a keystroke
 
 commands = { ord('v'): {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
              ord('V'): {'seq': 1,'descr':'M107 turn fan off','func':fanOff},
@@ -408,8 +411,7 @@ printInfo(ptr.init(serialPort,baudRate))
 printCommands()
 
 while True: # main loop
-  updateCamera()
-  press = screen.getch() # get the character pressed by the user (non blocking)
+  press = getKeyOrMacro() # get a keystroke or macro step (and maintain camera)
   if commands.has_key(press): # if keystore is a known command in array
     printInfo(commands[press]['descr']) # print the command description
     commands[press]['func']() # run the appropriate subroutine

@@ -5,7 +5,7 @@ at least use M114 to grab machine coordinates after homing
 
 use a file to load dictionary of files and descriptions for files menu
 
-actually make macros work
+make tool changes use ptr.waitOk() and investigate weird behavior on first toolchange
 
 change stored positions to an empty dictionary, so you can use any key for storage
 
