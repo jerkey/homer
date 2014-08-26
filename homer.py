@@ -9,6 +9,7 @@ import os,datetime,time
 serialPort = '/dev/ttyACM0'
 baudRate = 230400
 cameraActivated = False
+hotbedTemp = 150 # temperature of heated bed (0 when off)
 macro_buffer = [] # put any startup commands in here, as integers with ord() or curses.KEY_whatever
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 home_switches = {'x': 240, 'y': 0, 'z': 0} # where does your machine go when it homes?
@@ -19,10 +20,14 @@ files = {ord('g') : {'name':'green resist for tai crystal','filename':'tai1.g'},
          ord('c') : {'name':'move plate to and return','filename':'cookr.g'}}
 macros = {ord('p') : {'name':'resist block and cam next','keys':'pfc'},
           ord('d') : {'name':'dance','keys':'pcpc'},
+          ord('l') : {'name':'left 10.5','keys':'g1 x-10.5'+chr(10)},
+          ord('r') : {'name':'right 10.5','keys':'g1 x10.5'+chr(10)},
+          ord('p') : {'name':'previous copper','keys':'g1 x-15.22 Y0.09'+chr(10)},
+          ord('n') : {'name':'next copper','keys':'g1 x15.22 Y-0.09'+chr(10)},
           ord('s') : {'name':'solder paste block','keys':'pfc'}}
 tools = {ord('e') : {'name':'plastic extruder'},
          ord('c') : {'name':'camera'},
-         ord('g') : {'name':'green goo'},
+         ord('r') : {'name':'resist mask'},
          ord('p') : {'name':'solder paste'}}
 for i in tools:
   for g in {'x','y','z'}:
@@ -149,6 +154,14 @@ def printInfo(text):
   screen.addstr(1,0,str("absolute position: %.3f, %.3f, %.3f        "  % (present_position['x'],present_position['y'],present_position['z'])).ljust(midX))
   screen.addstr(2,0,text.ljust(midX))
   screen.refresh() # tell curses to actually show it now
+
+def hotbedOn():
+  ptr.cmnd("M140 S"+str(hotbedTemp))
+  printInfo("M140 S"+str(hotbedTemp))
+
+def hotbedOff():
+  ptr.cmnd("M140 S0")
+  printInfo("M140 S0")
 
 def fanOn():
   ptr.cmnd("M106     ")
@@ -361,8 +374,8 @@ def getKeyOrMacro(): # return a keypress, or a macro stroke if there is one
       screen.addstr(3,0," ".ljust(midX));
     return macro_buffer.pop(0) # give the first thing in the buffer as a keystroke
 
-commands = { ord('v'): {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
-             ord('V'): {'seq': 1,'descr':'M107 turn fan off','func':fanOff},
+commands = { ord('V'): {'seq': 0,'descr':'turn hotbed to '+str(hotbedTemp)+' C','func':hotbedOn},
+             ord('v'): {'seq': 1,'descr':'turn hotbed off','func':hotbedOff},
              ord('Q'): {'seq': 2,'descr':'Quit without saving','func':noSaveQuit},
              ord('q'): {'seq': 3,'descr':'quit (and save)','func':saveQuit},
              ord('h'): {'seq': 4,'descr':'home a specific axis','func':homeOne},
@@ -379,9 +392,7 @@ commands = { ord('v'): {'seq': 0,'descr':'M106 turn fan on','func':fanOn},
              ord('2'): {'seq':15,'descr':'set movement increment to 0.1','func':speed2},
              ord('3'): {'seq':16,'descr':'set movement increment to 1.0','func':speed3},
              ord('4'): {'seq':17,'descr':'set movement increment to 10.0','func':speed4},
-            ord('\\'): {'seq':18,'descr':'turn on (or off) camera','func':cameraOnOff},
-             ord('W'): {'seq':19,'descr':'Write save file','func':Write},
-             ord('R'): {'seq':20,'descr':'Read save file','func':Read}}
+            ord('\\'): {'seq':18,'descr':'turn on (or off) camera','func':cameraOnOff}}
 
 screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
@@ -447,9 +458,15 @@ while True: # main loop
         present_position[i] += move_adder[i]
       tool_mode = press
       ptr.cmnd("G1 Z5 F800") # move up before moving
-      ptr.cmnd("G1 X{0} Y{1} Z{2} F8000".format(move_adder['x'],move_adder['y'],move_adder['z'])) #ptr.cmnd
+      errors = ptr.waitOk()
+      moveString = "G1 X{0} Y{1} Z{2} F8000".format(move_adder['x'],move_adder['y'],move_adder['z']) #ptr.cmnd
+      ptr.cmnd(moveString)
+      errors = errors + ptr.waitOk()
       ptr.cmnd("G1 Z-5 F800") # move down after moving
-    printInfo( "moving machine to other tool = {0}".format(tools[press]['name']))
+      errors = errors + ptr.waitOk()
+      printInfo(moveString+" select tool = {0}".format(tools[press]['name'])+errors)
+    else:
+      printInfo( "already selected tool = {0}".format(tools[press]['name']))
 
   elif (press + 32) in tools:  # capital letter version of a tool key
     press += 32 # change it to lowercase version
