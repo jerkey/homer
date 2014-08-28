@@ -9,6 +9,7 @@ import os,datetime,time
 serialPort = '/dev/ttyACM0'
 baudRate = 230400
 cameraActivated = False
+focusWindowSize = 0.3 # portion of center of camera view to focus on
 hotbedTemp = 150 # temperature of heated bed (0 when off)
 macro_buffer = [] # put any startup commands in here, as integers with ord() or curses.KEY_whatever
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
@@ -356,10 +357,55 @@ def updateCamera():
     cv2.putText(frame, "x", (310,240), cv2.FONT_HERSHEY_PLAIN, 4.0, (255,0,0), thickness=3)
     cv2.imshow("preview", frame)
     key = cv2.waitKey(1) # Note This function is the only method in HighGUI that can fetch and handle events, so it needs to be called periodically for normal event processing unless HighGUI is used within an environment that takes care of event processing.
-    #printInfo(str(time.time()))
+
+    #hist_full = cv2.calcHist([frame],[0],None,[256],[0,256])# Calculate histogram
+    hist_focusWindow = cv2.calcHist([frame],[0],focusWindow,[256],[0,256]) # Calculate histogram with mask
+    histogram = [item for sublist in hist_focusWindow for item in sublist] # flatten histogram into a list
+    histogram_length = sum(histogram) # count the pixels
+    samples_probability = [float(h) / histogram_length for h in histogram]
+    entropy = -sum([p * math.log(p, 2) for p in samples_probability if p != 0])
     if key == 27: # exit on ESC (-1 if no key pressed) in preview window
       cv2.destroyWindow("preview")
       cameraActivated = False
+    return entropy # return the focus value
+
+def focusAway(): # move camera away from target to best focus point
+  if not cameraActivated:
+    printInfo("camera must be active before attempting auto-focus")
+    return
+  if not mathNumpyImported:
+    printInfo("failed to load python module math or numpy, can't focus without them")
+    return
+  if increment > 2: # increment must be set to a reasonably small value
+    printInfo("increment value is higher than 2, can't focus that way")
+    return
+  moveCount = 0 # how many times we've moved
+  lastFocus = 0 # focus value where we were last
+  while moveCount * increment < 10.0: # move no more than 10mm away from target
+    focus = sum([updateCamera() for i in range(10)]) # add ten frames worth of focus measurement
+    if focus > lastFocus: # if this focus is better than previous position
+      lastFocus = focus
+      ptr.zp(increment)
+      present_position['z']+=increment
+      printInfo( "focus up")
+      ptr.cmnd("G4 P1") # make sure we wait until the machine arrives
+      if ptr.waitOk() == "": # make sure we get an OK after that move
+        moveCount += 1 # keep track of how far we've moved
+      else:
+        printInfo("ERROR: did not get OK from printer after move")
+        return
+    else: # previous focus position was better
+      ptr.zm(increment)
+      present_position['z']-=increment
+      if moveCount == 1:
+        printInfo("not close enough? can't find best focus")
+      else:
+        printInfo("achieved best focus")
+      return
+  printInfo("could not find best focus, returning to start point")
+  for m in range(moveCount):
+    ptr.zm(increment)
+    present_position['z']-=increment
 
 def getKeyOrMacro(): # return a keypress, or a macro stroke if there is one
   if len(macro_buffer) == 0:
@@ -387,12 +433,13 @@ commands = { ord('V'): {'seq': 0,'descr':'turn hotbed to '+str(hotbedTemp)+' C',
              ord('g'): {'seq':10,'descr':'send G-code to machine','func':gCode},
              ord('m'): {'seq':11,'descr':'send M-code to machine','func':mCode},
              ord('f'): {'seq':12,'descr':'print a g-code file to machine','func':filePicker},
-             ord('`'): {'seq':13,'descr':'execute a keystroke macro (no work yet)','func':macro},
-             ord('1'): {'seq':14,'descr':'set movement increment to 0.25','func':speed1},
-             ord('2'): {'seq':15,'descr':'set movement increment to 0.1','func':speed2},
-             ord('3'): {'seq':16,'descr':'set movement increment to 1.0','func':speed3},
-             ord('4'): {'seq':17,'descr':'set movement increment to 10.0','func':speed4},
-            ord('\\'): {'seq':18,'descr':'turn on (or off) camera','func':cameraOnOff}}
+             ord('A'): {'seq':13,'descr':'Auto-focus the camera Z+ from target','func':focusAway},
+             ord('`'): {'seq':14,'descr':'execute a keystroke macro (no work yet)','func':macro},
+             ord('1'): {'seq':15,'descr':'set movement increment to 0.25','func':speed1},
+             ord('2'): {'seq':16,'descr':'set movement increment to 0.1','func':speed2},
+             ord('3'): {'seq':17,'descr':'set movement increment to 1.0','func':speed3},
+             ord('4'): {'seq':18,'descr':'set movement increment to 10.0','func':speed4},
+            ord('\\'): {'seq':19,'descr':'turn on (or off) camera','func':cameraOnOff}}
 
 screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
@@ -406,12 +453,22 @@ increment = 1.0
 statusLines = 4 # how many lines are used for changing data (left side of screen)
 tool_mode = ord('c') # you better have a valid tool in here to start with
 try:
-  import cv2
+  import cv2 # need this for camera
   os.environ["DISPLAY"] = ":0" # tell it to open the camera on the local machine even if we're remote
   cv2.namedWindow("preview") # create the viewport
   camera1 = cv2.VideoCapture(0) # choose camera1 number here
   if camera1.isOpened(): # try to get the first frame
     cameraWorking, frame = camera1.read()
+  try:
+    import math, numpy # need these for autofocus
+    height, width = frame.shape[:2]
+    focusWindow = numpy.zeros((height,width), numpy.uint8) # create a focusWindow
+    vborder = (height*(1-focusWindowSize))/2
+    hborder = (width*(1-focusWindowSize))/2
+    focusWindow[vborder:height-vborder, hborder:width-hborder] = 255
+    mathNumpyImported = True
+  except ImportError:
+    mathNumpyImported = False
   cv2Imported = True
 except ImportError:
   cv2Imported = False
