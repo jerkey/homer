@@ -1,5 +1,5 @@
 import cv2, math
-import numpy as np
+import numpy
 
 cv2.namedWindow("preview")
 camera = cv2.VideoCapture(0)
@@ -15,7 +15,7 @@ while rval:
   key = cv2.waitKey(20)
 
   # create a mask
-  mask = np.zeros(frame.shape[:2], np.uint8)
+  mask = numpy.zeros(frame.shape[:2], numpy.uint8)
   mask[100:300, 100:400] = 255
   masked_frame = cv2.bitwise_and(frame,frame,mask = mask)
 
