@@ -104,7 +104,7 @@ def printFile(filename, ptr):
       ptr.cmnd(line) # send this command to the printer
       screen.addstr(line+ptr.waitOk()+"\n") # wait for OK and print errors
       screen.refresh()
-      updateCamera()
+      updateCamera(False)
   fd.close()
   screen.addstr("Finished printing G-code file  "+filename+"  (press any key)")
   screen.refresh()
@@ -350,24 +350,27 @@ def cameraOnOff():
   else:
     printInfo("could not import cv2 to open camera (need opencv2 for python)")
 
-def updateCamera():
+def updateCamera(focus): # focus is True if you want it to return a focus value
   global cameraActivated, frame
   if cameraActivated:
     cameraWorking, frame = camera1.read()
-    cv2.putText(frame, "x", (310,240), cv2.FONT_HERSHEY_PLAIN, 4.0, (255,0,0), thickness=3)
+    if focus:
+      cv2.putText(frame, "focusing", (200,240), cv2.FONT_HERSHEY_PLAIN, 4.0, (255,0,0), thickness=3)
+    else:
+      cv2.putText(frame, "x", (310,240), cv2.FONT_HERSHEY_PLAIN, 4.0, (255,0,0), thickness=3)
     cv2.imshow("preview", frame)
     key = cv2.waitKey(1) # Note This function is the only method in HighGUI that can fetch and handle events, so it needs to be called periodically for normal event processing unless HighGUI is used within an environment that takes care of event processing.
-
-    #hist_full = cv2.calcHist([frame],[0],None,[256],[0,256])# Calculate histogram
-    hist_focusWindow = cv2.calcHist([frame],[0],focusWindow,[256],[0,256]) # Calculate histogram with mask
-    histogram = [item for sublist in hist_focusWindow for item in sublist] # flatten histogram into a list
-    histogram_length = sum(histogram) # count the pixels
-    samples_probability = [float(h) / histogram_length for h in histogram]
-    entropy = -sum([p * math.log(p, 2) for p in samples_probability if p != 0])
     if key == 27: # exit on ESC (-1 if no key pressed) in preview window
       cv2.destroyWindow("preview")
       cameraActivated = False
-    return entropy # return the focus value
+    if focus:
+      #hist_full = cv2.calcHist([frame],[0],None,[256],[0,256])# Calculate histogram
+      hist_focusWindow = cv2.calcHist([frame],[0],focusWindow,[256],[0,256]) # Calculate histogram with mask
+      histogram = [item for sublist in hist_focusWindow for item in sublist] # flatten histogram into a list
+      histogram_length = sum(histogram) # count the pixels
+      samples_probability = [float(h) / histogram_length for h in histogram]
+      entropy = -sum([p * math.log(p, 2) for p in samples_probability if p != 0])
+      return entropy # return the focus value
 
 def focusAway(): # move camera away from target to best focus point
   if not cameraActivated:
@@ -382,7 +385,7 @@ def focusAway(): # move camera away from target to best focus point
   moveCount = 0 # how many times we've moved
   lastFocus = 0 # focus value where we were last
   while moveCount * increment < 10.0: # move no more than 10mm away from target
-    focus = sum([updateCamera() for i in range(10)]) # add ten frames worth of focus measurement
+    focus = sum([updateCamera(True) for i in range(3)]) # add ten frames worth of focus measurement
     if focus > lastFocus: # if this focus is better than previous position
       lastFocus = focus
       ptr.zp(increment)
@@ -412,10 +415,9 @@ def getKeyOrMacro(): # return a keypress, or a macro stroke if there is one
     press = screen.getch()
     while press == -1:
       press = screen.getch()
-      updateCamera()
+      updateCamera(False)
     return press
   else:
-    updateCamera()
     if len(macro_buffer) == 1: # last command, let's clear line 3 since macro is over
       screen.addstr(3,0," ".ljust(midX));
     return macro_buffer.pop(0) # give the first thing in the buffer as a keystroke
