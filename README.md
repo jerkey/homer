@@ -18,6 +18,6 @@ you will need Python 2.7 or higher, and pyserial to talk to your cnc machine
 to get the camera view to work, you also need opencv 2 for python
 
 written by jerkey with help from treeherder
-license:  MIT
+license:  GPL V3
 ![homey](https://raw.github.com/jerkey/homer/master/screenshot.png)
 ![homey](https://raw.github.com/jerkey/homer/master/screenshot-cam.png)
