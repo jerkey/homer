@@ -10,14 +10,14 @@ serialPort = '/dev/ttyACM0'
 baudRate = 230400
 cameraActivated = False
 focusWindowSize = 0.3 # portion of center of camera view to focus on
-hotbedTemp = 150 # temperature of heated bed (0 when off)
+hotbedTemp = 200 # temperature of heated bed (0 when off)
 macro_buffer = [] # put any startup commands in here, as integers with ord() or curses.KEY_whatever
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 home_switches = {'x': 240, 'y': 0, 'z': 0} # where does your machine go when it homes?
 present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 filePath = "/home/smacbook/gcode/" # prefix for all filenames in files
 files = {ord('g') : {'name':'green resist for tai crystal','filename':'tai1.g'},
-         ord('s') : {'name':'solder paste for screw, post, tai','filename':'sold.g'},
+         ord('s') : {'name':'solder paste for screw, post, tai','filename':'taisold.g'},
          ord('c') : {'name':'move plate to and return','filename':'cookr.g'}}
 macros = {ord('p') : {'name':'resist block and cam next','keys':'pfc'},
           ord('d') : {'name':'dance','keys':'pcpc'},

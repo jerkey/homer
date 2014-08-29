@@ -9,6 +9,7 @@ else:
   rval = False
 
 while rval:
+  cv2.putText(frame, "x", (310,240), cv2.FONT_HERSHEY_PLAIN, 4.0, (255,0,0), thickness=3)
   cv2.imshow("preview", frame)
   rval, frame = camera.read()
   key = cv2.waitKey(20)
