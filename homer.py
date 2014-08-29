@@ -461,16 +461,17 @@ try:
   camera1 = cv2.VideoCapture(0) # choose camera1 number here
   if camera1.isOpened(): # try to get the first frame
     cameraWorking, frame = camera1.read()
-  try:
-    import math, numpy # need these for autofocus
-    height, width = frame.shape[:2]
-    focusWindow = numpy.zeros((height,width), numpy.uint8) # create a focusWindow
-    vborder = (height*(1-focusWindowSize))/2
-    hborder = (width*(1-focusWindowSize))/2
-    focusWindow[vborder:height-vborder, hborder:width-hborder] = 255
-    mathNumpyImported = True
-  except ImportError:
-    mathNumpyImported = False
+    if cameraWorking:
+      try:
+        import math, numpy # need these for autofocus
+        height, width = frame.shape[:2]
+        focusWindow = numpy.zeros((height,width), numpy.uint8) # create a focusWindow
+        vborder = (height*(1-focusWindowSize))/2
+        hborder = (width*(1-focusWindowSize))/2
+        focusWindow[vborder:height-vborder, hborder:width-hborder] = 255
+        mathNumpyImported = True
+      except ImportError:
+        mathNumpyImported = False
   cv2Imported = True
 except ImportError:
   cv2Imported = False
