@@ -447,6 +447,7 @@ screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
 curses.curs_set(0)
 screen.timeout(0)
+screen.scrollok(True) # allow gcode to scroll screen
 screenSize = screen.getmaxyx()
 midX = int(screenSize[1]/2) # store the midpoint of the width of the screen
 screen.keypad(1)  #nothing works without this
