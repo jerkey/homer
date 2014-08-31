@@ -453,27 +453,32 @@ def getKeyOrMacro(): # return a keypress, or a macro stroke if there is one
       screen.addstr(3,0," ".ljust(midX));
     return macro_buffer.pop(0) # give the first thing in the buffer as a keystroke
 
-commands = { ord('V'): {'seq': 0,'descr':'turn hotbed to '+str(hotbedTemp)+' C','func':hotbedOn},
-             ord('v'): {'seq': 1,'descr':'turn hotbed off','func':hotbedOff},
-             ord('Q'): {'seq': 2,'descr':'Quit without saving','func':noSaveQuit},
-             ord('q'): {'seq': 3,'descr':'quit (and save)','func':saveQuit},
-             ord('h'): {'seq': 4,'descr':'home a specific axis','func':homeOne},
-             ord('H'): {'seq': 5,'descr':'Home ALL axes','func':homeAll},
-             ord('z'): {'seq': 6,'descr':'zero a specific axis','func':zeroOne},
-             ord('Z'): {'seq': 7,'descr':'Zero ALL software axes','func':zeroAll},
-             ord('s'): {'seq': 8,'descr':'seek to stored position','func':seek},
-             ord('t'): {'seq': 9,'descr':'tool selector (or relative homing)','func':toolPicker},
-             ord('S'): {'seq':10,'descr':'Store present position to memory','func':seekStore},
-             ord('g'): {'seq':11,'descr':'send G-code to machine','func':gCode},
-             ord('m'): {'seq':12,'descr':'send M-code to machine','func':mCode},
-             ord('f'): {'seq':13,'descr':'print a g-code file to machine','func':filePicker},
-             ord('A'): {'seq':14,'descr':'Auto-focus the camera Z+ from target','func':focusAway},
-             ord('`'): {'seq':15,'descr':'execute a keystroke macro (no work yet)','func':macro},
-             ord('1'): {'seq':16,'descr':'set movement increment to 0.25','func':speed1},
-             ord('2'): {'seq':17,'descr':'set movement increment to 0.1','func':speed2},
-             ord('3'): {'seq':18,'descr':'set movement increment to 1.0','func':speed3},
-             ord('4'): {'seq':19,'descr':'set movement increment to 10.0','func':speed4},
-            ord('\\'): {'seq':20,'descr':'turn on (or off) camera','func':cameraOnOff}}
+commands = [ (ord('V'),{'descr':'turn hotbed to '+str(hotbedTemp)+' C','func':hotbedOn}),
+             (ord('v'),{'descr':'turn hotbed off','func':hotbedOff}),
+             (ord('Q'),{'descr':'Quit without saving','func':noSaveQuit}),
+             (ord('q'),{'descr':'quit (and save)','func':saveQuit}),
+             (ord('h'),{'descr':'home a specific axis','func':homeOne}),
+             (ord('H'),{'descr':'Home ALL axes','func':homeAll}),
+             (ord('z'),{'descr':'zero a specific axis','func':zeroOne}),
+             (ord('Z'),{'descr':'Zero ALL software axes','func':zeroAll}),
+             (ord('s'),{'descr':'seek to stored position','func':seek}),
+             (ord('t'),{'descr':'tool selector (or relative homing)','func':toolPicker}),
+             (ord('S'),{'descr':'Store present position to memory','func':seekStore}),
+             (ord('g'),{'descr':'send G-code to machine','func':gCode}),
+             (ord('m'),{'descr':'send M-code to machine','func':mCode}),
+             (ord('f'),{'descr':'print a g-code file to machine','func':filePicker}),
+             (ord('A'),{'descr':'Auto-focus the camera Z+ from target','func':focusAway}),
+             (ord('`'),{'descr':'execute a keystroke macro (no work yet)','func':macro}),
+             (ord('1'),{'descr':'set movement increment to 0.25','func':speed1}),
+             (ord('2'),{'descr':'set movement increment to 0.1','func':speed2}),
+             (ord('3'),{'descr':'set movement increment to 1.0','func':speed3}),
+             (ord('4'),{'descr':'set movement increment to 10.0','func':speed4}),
+            (ord('\\'),{'descr':'turn on (or off) camera','func':cameraOnOff})]
+i = 0 # we are going to turn the "list" above into a dictionary, with a sequence number
+for c in commands:
+  c[1]['seq'] = i
+  i += 1
+commands = dict(commands)
 
 screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
