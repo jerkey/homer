@@ -18,7 +18,7 @@ present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 filePath = "/home/smacbook/gcode/" # prefix for all filenames in files
 files = {ord('g') : {'name':'green resist for tai crystal','filename':'tai1.g'},
          ord('s') : {'name':'solder paste for screw, post, tai','filename':'taisold.g'},
-         ord('c') : {'name':'move plate to and return','filename':'cookr.g'}}
+         ord('c') : {'name':'solder paste only screwhole (start centered)','filename':'screwonly.g'}}
 macros = {ord('p') : {'name':'resist block and cam next','keys':'pfc'},
           ord('d') : {'name':'dance','keys':'pcpc'},
           ord('l') : {'name':'left 10.5','keys':'g1 x-10.5'+chr(10)},
@@ -143,7 +143,7 @@ def printCommands():
   for i in commands:
     screen.addstr(linenum+commands[i]['seq'],midX,str(" {0}: {1}".format(chr(i),commands[i]['descr'])).ljust(midX))
   linenum += len(commands)+1
-  screen.addstr(linenum,midX,"press letter to switch tools, Shift- to home tool".ljust(midX))
+  screen.addstr(linenum,midX,"tools available (press t to change tools)".ljust(midX))
   linenum += 1
   for i in tools:
     screen.addstr(linenum,midX,str(" tool {0}: {4}:  X{1} Y{2} Z{3}".format(chr(i),tools[i]['x'],tools[i]['y'],tools[i]['z'],tools[i]['name']).ljust(10)))
@@ -319,6 +319,37 @@ def filePicker():
   else:
     printInfo("not a valid files key")
 
+def toolPicker():
+  printInfo("press a tool key (with shift for homing)")
+  press = getKeyOrMacro()
+  if press in tools:  # if any tool is selected
+    if tool_mode != press:
+      for i in {'x','y','z'}:
+        move_adder[i] = tools[press][i] - tools[tool_mode][i]
+        present_position[i] += move_adder[i]
+      tool_mode = press
+      ptr.cmnd("G1 Z5 F800") # move up before moving
+      errors = ptr.waitOk()
+      moveString = "G1 X{0} Y{1} Z{2} F8000".format(move_adder['x'],move_adder['y'],move_adder['z']) #ptr.cmnd
+      ptr.cmnd(moveString)
+      errors = errors + ptr.waitOk()
+      ptr.cmnd("G1 Z-5 F800") # move down after moving
+      errors = errors + ptr.waitOk()
+      printInfo(moveString+" select tool = {0}".format(tools[press]['name'])+errors)
+    else:
+      printInfo( "already selected tool = {0}".format(tools[press]['name']))
+
+  elif (press + 32) in tools:  # capital letter version of a tool key
+    press += 32 # change it to lowercase version
+    tool_mode = press
+    printInfo( "{0} home".format(tools[press]['name']))
+    for i in {'x','y','z'}:
+      tools[press][i] = present_position[i]
+    printCommands() # update display of tool coordinates
+
+  else:
+    printInfo("not a valid tools key")
+
 def macro():
   global macro_buffer
   printInfo("Which macro to execute?")
@@ -431,17 +462,18 @@ commands = { ord('V'): {'seq': 0,'descr':'turn hotbed to '+str(hotbedTemp)+' C',
              ord('z'): {'seq': 6,'descr':'zero a specific axis','func':zeroOne},
              ord('Z'): {'seq': 7,'descr':'Zero ALL software axes','func':zeroAll},
              ord('s'): {'seq': 8,'descr':'seek to stored position','func':seek},
-             ord('S'): {'seq': 9,'descr':'Store present position to memory','func':seekStore},
-             ord('g'): {'seq':10,'descr':'send G-code to machine','func':gCode},
-             ord('m'): {'seq':11,'descr':'send M-code to machine','func':mCode},
-             ord('f'): {'seq':12,'descr':'print a g-code file to machine','func':filePicker},
-             ord('A'): {'seq':13,'descr':'Auto-focus the camera Z+ from target','func':focusAway},
-             ord('`'): {'seq':14,'descr':'execute a keystroke macro (no work yet)','func':macro},
-             ord('1'): {'seq':15,'descr':'set movement increment to 0.25','func':speed1},
-             ord('2'): {'seq':16,'descr':'set movement increment to 0.1','func':speed2},
-             ord('3'): {'seq':17,'descr':'set movement increment to 1.0','func':speed3},
-             ord('4'): {'seq':18,'descr':'set movement increment to 10.0','func':speed4},
-            ord('\\'): {'seq':19,'descr':'turn on (or off) camera','func':cameraOnOff}}
+             ord('t'): {'seq': 9,'descr':'tool selector (or relative homing)','func':toolPicker},
+             ord('S'): {'seq':10,'descr':'Store present position to memory','func':seekStore},
+             ord('g'): {'seq':11,'descr':'send G-code to machine','func':gCode},
+             ord('m'): {'seq':12,'descr':'send M-code to machine','func':mCode},
+             ord('f'): {'seq':13,'descr':'print a g-code file to machine','func':filePicker},
+             ord('A'): {'seq':14,'descr':'Auto-focus the camera Z+ from target','func':focusAway},
+             ord('`'): {'seq':15,'descr':'execute a keystroke macro (no work yet)','func':macro},
+             ord('1'): {'seq':16,'descr':'set movement increment to 0.25','func':speed1},
+             ord('2'): {'seq':17,'descr':'set movement increment to 0.1','func':speed2},
+             ord('3'): {'seq':18,'descr':'set movement increment to 1.0','func':speed3},
+             ord('4'): {'seq':19,'descr':'set movement increment to 10.0','func':speed4},
+            ord('\\'): {'seq':20,'descr':'turn on (or off) camera','func':cameraOnOff}}
 
 screen = curses.initscr()  #we're not in kansas anymore
 curses.noecho()    #could be .echo() if you want to see what you type
@@ -511,28 +543,3 @@ while True: # main loop
     ptr.zm(increment)
     present_position['z']-=increment  #this needs to be modular for scalar
     printInfo( "down ")
-
-  elif press in tools:  # if any tool is selected
-    if tool_mode != press:
-      for i in {'x','y','z'}:
-        move_adder[i] = tools[press][i] - tools[tool_mode][i]
-        present_position[i] += move_adder[i]
-      tool_mode = press
-      ptr.cmnd("G1 Z5 F800") # move up before moving
-      errors = ptr.waitOk()
-      moveString = "G1 X{0} Y{1} Z{2} F8000".format(move_adder['x'],move_adder['y'],move_adder['z']) #ptr.cmnd
-      ptr.cmnd(moveString)
-      errors = errors + ptr.waitOk()
-      ptr.cmnd("G1 Z-5 F800") # move down after moving
-      errors = errors + ptr.waitOk()
-      printInfo(moveString+" select tool = {0}".format(tools[press]['name'])+errors)
-    else:
-      printInfo( "already selected tool = {0}".format(tools[press]['name']))
-
-  elif (press + 32) in tools:  # capital letter version of a tool key
-    press += 32 # change it to lowercase version
-    tool_mode = press
-    printInfo( "{0} home".format(tools[press]['name']))
-    for i in {'x','y','z'}:
-      tools[press][i] = present_position[i]
-    printCommands() # update display of tool coordinates
