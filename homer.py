@@ -387,7 +387,8 @@ def updateCamera(focus): # focus is True if you want it to return a focus value
   if cameraActivated:
     cameraWorking, frame = camera1.read()
     if focus:
-      cv2.putText(frame, "focusing", (200,240), cv2.FONT_HERSHEY_PLAIN, 4.0, (255,0,0), thickness=3)
+      pass
+      #cv2.putText(frame, "focusing", (200,240), cv2.FONT_HERSHEY_PLAIN, 4.0, (255,0,0), thickness=3)
     else:
       cv2.putText(frame, "x", (310,240), cv2.FONT_HERSHEY_PLAIN, 4.0, (255,0,0), thickness=3)
     cv2.imshow("preview", frame)
