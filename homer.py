@@ -320,6 +320,7 @@ def filePicker():
     printInfo("not a valid files key")
 
 def toolPicker():
+  global tool_mode
   printInfo("press a tool key (with shift for homing)")
   press = getKeyOrMacro()
   if press in tools:  # if any tool is selected
