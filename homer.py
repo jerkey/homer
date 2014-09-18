@@ -18,6 +18,7 @@ present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 filePath = "/home/smacbook/gcode/" # prefix for all filenames in files
 files = {ord('g') : {'name':'green resist for tai crystal','filename':'tai1.g'},
          ord('s') : {'name':'solder paste for screw, post, tai','filename':'taisold.g'},
+         ord('b') : {'name':'green resist box for cyrium','filename':'box.g'},
          ord('c') : {'name':'solder paste only screwhole (start centered)','filename':'screwonly.g'}}
 macros = {ord('p') : {'name':'resist block and cam next','keys':'pfc'},
           ord('d') : {'name':'dance','keys':'pcpc'},
@@ -455,8 +456,16 @@ def getKeyOrMacro(): # return a keypress, or a macro stroke if there is one
       screen.addstr(3,0," ".ljust(midX));
     return macro_buffer.pop(0) # give the first thing in the buffer as a keystroke
 
+def vacPumpOff(): # turn OFF vacuum pump on pin 40
+  ptr.cmnd("M42 P40 S0")
+
+def vacPumpOn(): # turn ON vacuum pump on pin 40
+  ptr.cmnd("M42 P40 S255")
+
 commands = [ (ord('V'),{'descr':'turn hotbed to '+str(hotbedTemp)+' C','func':hotbedOn}),
              (ord('v'),{'descr':'turn hotbed off','func':hotbedOff}),
+             (ord('P'),{'descr':'turn vacpump on','func':vacPumpOn}),
+             (ord('p'),{'descr':'turn vacpump off','func':vacPumpOff}),
              (ord('Q'),{'descr':'Quit without saving','func':noSaveQuit}),
              (ord('q'),{'descr':'quit (and save)','func':saveQuit}),
              (ord('h'),{'descr':'home a specific axis','func':homeOne}),

@@ -5,8 +5,6 @@ at least use M114 to grab machine coordinates after homing
 
 use a file to load dictionary of files and descriptions for files menu
 
-make tool use t and T, instead of direct-lettering the toolheads
-
 fix tool homing for god sakes, make them relative to one another
 
 make tool changes use ptr.waitOk() and investigate weird behavior on first toolchange
