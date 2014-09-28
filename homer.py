@@ -467,6 +467,16 @@ def fanOnOff(): # toggle fan on or off
     printInfo("M106")
     fanOn = True
 
+def takePicture(): # save an image to disk with timestamp and coords
+  if not cameraActivated:
+    printInfo("camera must be active before taking a picture")
+    return
+  filename = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
+  filename += " X%.3fY%.3fZ%.3f" % (present_position['x'],present_position['y'],present_position['z'])+'.png'
+  printInfo('taking picture to '+filename)
+  updateCamera(True)
+  cv2.imwrite(filename,frame)
+
 commands = [ (ord('V'),{'descr':'turn hotbed to '+str(hotbedTemp)+' C','func':hotbedOn}),
              (ord('v'),{'descr':'turn hotbed off','func':hotbedOff}),
              (ord('F'),{'descr':'toggle fan on/off','func':fanOnOff}),
@@ -490,6 +500,7 @@ commands = [ (ord('V'),{'descr':'turn hotbed to '+str(hotbedTemp)+' C','func':ho
              (ord('2'),{'descr':'set movement increment to 0.1','func':speed2}),
              (ord('3'),{'descr':'set movement increment to 1.0','func':speed3}),
              (ord('4'),{'descr':'set movement increment to 10.0','func':speed4}),
+             (ord('='),{'descr':'take a timestamped PNG with coordinates','func':takePicture}),
             (ord('\\'),{'descr':'turn on (or off) camera','func':cameraOnOff})]
 i = 0 # we are going to turn the "list" above into a dictionary, with a sequence number
 for c in commands:
