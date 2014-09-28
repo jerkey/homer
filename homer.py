@@ -9,6 +9,7 @@ import os,datetime,time
 serialPort = '/dev/ttyACM0'
 baudRate = 230400
 cameraActivated = False
+fanOn = False
 focusWindowSize = 0.3 # portion of center of camera view to focus on
 hotbedTemp = 200 # temperature of heated bed (0 when off)
 macro_buffer = [] # put any startup commands in here, as integers with ord() or curses.KEY_whatever
@@ -19,7 +20,8 @@ filePath = "/home/smacbook/gcode/" # prefix for all filenames in files
 files = {ord('g') : {'name':'green resist for tai crystal','filename':'tai1.g'},
          ord('s') : {'name':'solder paste for screw, post, tai','filename':'taisold.g'},
          ord('b') : {'name':'green resist box for cyrium','filename':'box.g'},
-         ord('c') : {'name':'solder paste only screwhole (start centered)','filename':'screwonly.g'}}
+         ord('j') : {'name':'solder paste busbar JDSU','filename':'sline-jdsu.g'},
+         ord('c') : {'name':'solder paste only screwhole','filename':'screwonly.g'}}
 macros = {ord('p') : {'name':'resist block and cam next','keys':'pfc'},
           ord('d') : {'name':'dance','keys':'pcpc'},
           ord('l') : {'name':'left 10.5','keys':'g1 x-10.5'+chr(10)},
@@ -164,14 +166,6 @@ def hotbedOn():
 def hotbedOff():
   ptr.cmnd("M140 S0")
   printInfo("M140 S0")
-
-def fanOn():
-  ptr.cmnd("M106     ")
-  printInfo("M106     ")
-
-def fanOff():
-  ptr.cmnd("M107     ")
-  printInfo("M107     ")
 
 def saveQuit(): # save configuration before quitting
   saveData()
@@ -462,8 +456,20 @@ def vacPumpOff(): # turn OFF vacuum pump on pin 40
 def vacPumpOn(): # turn ON vacuum pump on pin 40
   ptr.cmnd("M42 P40 S255")
 
+def fanOnOff(): # toggle fan on or off
+  global fanOn
+  if fanOn:
+    ptr.cmnd("M107") # turn fan off
+    printInfo("M107")
+    fanOn = False
+  else:
+    ptr.cmnd("M106") # turn fan on
+    printInfo("M106")
+    fanOn = True
+
 commands = [ (ord('V'),{'descr':'turn hotbed to '+str(hotbedTemp)+' C','func':hotbedOn}),
              (ord('v'),{'descr':'turn hotbed off','func':hotbedOff}),
+             (ord('F'),{'descr':'toggle fan on/off','func':fanOnOff}),
              (ord('P'),{'descr':'turn vacpump on','func':vacPumpOn}),
              (ord('p'),{'descr':'turn vacpump off','func':vacPumpOff}),
              (ord('Q'),{'descr':'Quit without saving','func':noSaveQuit}),
@@ -479,7 +485,7 @@ commands = [ (ord('V'),{'descr':'turn hotbed to '+str(hotbedTemp)+' C','func':ho
              (ord('m'),{'descr':'send M-code to machine','func':mCode}),
              (ord('f'),{'descr':'print a g-code file to machine','func':filePicker}),
              (ord('A'),{'descr':'Auto-focus the camera Z+ from target','func':focusAway}),
-             (ord('`'),{'descr':'execute a keystroke macro (no work yet)','func':macro}),
+             (ord('`'),{'descr':'execute a keystroke macro','func':macro}),
              (ord('1'),{'descr':'set movement increment to 0.25','func':speed1}),
              (ord('2'),{'descr':'set movement increment to 0.1','func':speed2}),
              (ord('3'),{'descr':'set movement increment to 1.0','func':speed3}),
