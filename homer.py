@@ -477,6 +477,39 @@ def takePicture(): # save an image to disk with timestamp and coords
   updateCamera(True)
   cv2.imwrite(filename,frame)
 
+scriptFile = None # rpt2pnp.script to read from
+configFile = None # rpt2pnp.config file to write to
+scriptLine = '' # line of rpt2pnp.script we last read
+
+def rpt2pnp(): # run an rpt2pnp script
+  global scriptFile,configFile,scriptLine
+  if scriptFile == None:
+    printInfo('Do you want to open script.pnp and run it? y/n')
+    press = getKeyOrMacro() # get a keystroke or macro step (and maintain camera)
+    if press != ord('y'):
+      printInfo('chose not to open script')
+      return
+    printInfo('opening script.pnp')
+    scriptFile = open('script.pnp','r')
+    configFile = open('config.pnp','w')
+    scriptLine = scriptFile.readline().split('\n')[0]
+    screen.addstr(3,0,scriptLine[scriptLine.find(':')+1:]+' and press R')
+    screen.refresh()
+    return
+  writeString = scriptLine.split(chr(9))[0]+chr(9)+"%.3f %.3f %.3f" % (present_position['x'],present_position['y'],present_position['z'])
+  configFile.write(writeString+'\n')
+  printInfo('wrote to configFile: '+writeString)
+  scriptLine = scriptFile.readline().split('\n')[0]
+  if scriptLine == '':
+    screen.addstr(3,0," ".ljust(midX)) # clear script navigation line
+    printInfo('finished reading from pnp script and writing config file')
+    configFile.close() # done with the file we're writing
+    scriptFile = None
+    printCommands() # refresh the screen a little
+    return
+  screen.addstr(3,0,str(scriptLine[scriptLine.find(':')+1:]+' and press R').ljust(midX))
+  screen.refresh()
+
 commands = [ (ord('V'),{'descr':'turn hotbed to '+str(hotbedTemp)+' C','func':hotbedOn}),
              (ord('v'),{'descr':'turn hotbed off','func':hotbedOff}),
              (ord('F'),{'descr':'toggle fan on/off','func':fanOnOff}),
@@ -495,6 +528,7 @@ commands = [ (ord('V'),{'descr':'turn hotbed to '+str(hotbedTemp)+' C','func':ho
              (ord('m'),{'descr':'send M-code to machine','func':mCode}),
              (ord('f'),{'descr':'print a g-code file to machine','func':filePicker}),
              (ord('A'),{'descr':'Auto-focus the camera Z+ from target','func':focusAway}),
+             (ord('R'),{'descr':'run an rpt2pnp script','func':rpt2pnp}),
              (ord('`'),{'descr':'execute a keystroke macro','func':macro}),
              (ord('1'),{'descr':'set movement increment to 0.25','func':speed1}),
              (ord('2'),{'descr':'set movement increment to 0.1','func':speed2}),
