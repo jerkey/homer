@@ -14,7 +14,7 @@ focusWindowSize = 0.3 # portion of center of camera view to focus on
 hotbedTemp = 200 # temperature of heated bed (0 when off)
 macro_buffer = [] # put any startup commands in here, as integers with ord() or curses.KEY_whatever
 move_adder = {'x': 0.0, 'y': 0.0, 'z': 0.0}
-home_switches = {'x': 240, 'y': 0, 'z': 0} # where does your machine go when it homes?
+homed_axes = {'x': False, 'y': False, 'z': False} # has this axis been hardware homed?
 present_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 filePath = "/home/smacbook/gcode/" # prefix for all filenames in files
 files = {ord('g') : {'name':'green resist for tai crystal','filename':'tai1.g'},
@@ -39,6 +39,24 @@ for i in tools:
 seek_positions = { n : {'name': '', 'x': 0.0, 'y': 0.0, 'z': 0.0} for n in range(10)} # create empty array
 
 datafilename = 'homer.dat'
+
+def getPosition(): # ask printer for present position with M114
+  ptr.cmnd('M114')
+  m114 = ptr.read1line().split('\n')[0] # get text back from printer
+  axes_read = '' # which axes were read from hardware (because they were homed)
+  if homed_axes['x']:
+    present_position['x'] = float(m114.split(':')[1].split('Y')[0])
+    axes_read += 'X '
+  if homed_axes['y']:
+    present_position['y'] = float(m114.split(':')[2].split('Z')[0])
+    axes_read += 'Y '
+  if homed_axes['z']:
+    present_position['z'] = float(m114.split(':')[3].split('E')[0])
+    axes_read += 'Z '
+  if axes_read != '':
+    printInfo('axes read from hardware: '+axes_read)
+  else:
+    printInfo('no axes read.  Have you homed any hardware axes yet?')
 
 def saveData(): # store the tools dictionary to a file, after renaming old one
   errText = ""
@@ -189,22 +207,24 @@ def Read():
 
 def homeOne():
   homeList= ""
-  for axes in home_switches:
+  for axes in homed_axes:
     homeList = homeList+str(axes)
   printInfo("home which axis? choose "+homeList)
   press = getKeyOrMacro()
-  if chr(press) in home_switches:
+  if chr(press) in homed_axes:
     ptr.cmnd("G28 "+chr(press & 223)) # CAPITALIZE axis letter
-    present_position[chr(press)] = home_switches[chr(press)] # where are your limit switches?
+    present_position[chr(press)] = homed_axes[chr(press)] # where are your limit switches?
     printInfo( "homed machine axis "+chr(press & 223)) # CAPITALIZE axis letter
+    homed_axes[chr(press)] = True
   else:
     printInfo("Not a valid axis letter")
 
 def homeAll(): # home all axes in homeList
   homeList= ""
-  for axes in home_switches:
+  for axes in homed_axes:
     homeList = homeList+str(axes).upper()
-    present_position[axes] = home_switches[axes] # where are your limit switches?
+    resent_position[axes] = homed_axes[axes] # where are your limit switches?
+    homed_axes[axes] = True
   ptr.cmnd("G28 "+homeList)
   printInfo( "homed ALL machine axes "+homeList)
 
@@ -496,6 +516,7 @@ def rpt2pnp(): # run an rpt2pnp script
     screen.addstr(3,0,scriptLine[scriptLine.find(':')+1:]+' and press R')
     screen.refresh()
     return
+  getPosition() # update present position from hardware
   writeString = scriptLine.split(chr(9))[0]+chr(9)+"%.3f %.3f %.3f" % (present_position['x'],present_position['y'],present_position['z'])
   configFile.write(writeString+'\n')
   printInfo('wrote to configFile: '+writeString)
@@ -517,6 +538,7 @@ commands = [ (ord('V'),{'descr':'turn hotbed to '+str(hotbedTemp)+' C','func':ho
              (ord('p'),{'descr':'turn vacpump off','func':vacPumpOff}),
              (ord('Q'),{'descr':'Quit without saving','func':noSaveQuit}),
              (ord('q'),{'descr':'quit (and save)','func':saveQuit}),
+             (ord('G'),{'descr':'get position from M114','func':getPosition}),
              (ord('h'),{'descr':'home a specific axis','func':homeOne}),
              (ord('H'),{'descr':'Home ALL axes','func':homeAll}),
              (ord('z'),{'descr':'zero a specific axis','func':zeroOne}),
