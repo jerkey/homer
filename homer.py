@@ -27,8 +27,8 @@ macros = {ord('p') : {'name':'resist block and cam next','keys':'pfc'},
           ord('l') : {'name':'left 10.5','keys':'g1 x-10.5'+chr(10)},
           ord('r') : {'name':'right 10.5','keys':'g1 x10.5'+chr(10)},
           ord('p') : {'name':'previous copper','keys':'g1 x-15.22 Y0.09'+chr(10)},
-          ord('n') : {'name':'next copper','keys':'g1 x15.22 Y-0.09'+chr(10)},
-          ord('s') : {'name':'solder paste block','keys':'pfc'}}
+          ord('s') : {'name':'activate sucker','keys':'m42 p6 s255\n'},
+          ord('b') : {'name':'deactivate sucker and blow','keys':'m42 p6 s0\nm42 p8 s255\ng4 p100\nm42 p8 s0\n'}}
 tools = {ord('e') : {'name':'plastic extruder'},
          ord('c') : {'name':'camera'},
          ord('r') : {'name':'resist mask'},
